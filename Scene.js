@@ -1,8 +1,8 @@
 export class Scene
 {
-    constructor()
+    constructor(options = {})
     {
-        this.nodes = [];
+        this.nodes = [...(options.nodes || [])];
     }
 
     addNode(node)
@@ -13,5 +13,13 @@ export class Scene
     traverse(before, after)
     {
         this.nodes.forEach(node => node.traverse(before, after));
+    }
+
+    clone()
+    {
+        return new Scene({
+            ...this,
+            nodes: this.nodes.map(node => node.clone()),
+        });
     }
 }

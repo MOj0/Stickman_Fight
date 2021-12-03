@@ -16,12 +16,12 @@ export class Node
 
     updateTransform()
     {
-        const t = this.transform;
-        const degrees = this.rotation.map(x => x * 180 / Math.PI);
-        const q = quat.fromEuler(quat.create(), ...degrees);
-        const v = vec3.clone(this.translation);
-        const s = vec3.clone(this.scale);
-        mat4.fromRotationTranslationScale(t, q, v, s);
+        // const t = this.transform;
+        // const degrees = this.rotation.map(x => x * 180 / Math.PI);
+        // const q = quat.fromEuler(quat.create(), ...degrees);
+        // const v = vec3.clone(this.translation);
+        // const s = vec3.clone(this.scale);
+        // mat4.fromRotationTranslationScale(t, q, v, s);
     }
 
     getGlobalTransform()

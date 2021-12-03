@@ -7,6 +7,8 @@ import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
 import { Camera } from "./Camera.js";
 import { Scene } from "./Scene.js";
+import { Player } from "./Player.js";
+import { GLTFLoader } from "./GLTFLoader.js";
 
 
 document.addEventListener("DOMContentLoaded", () =>
@@ -24,12 +26,14 @@ document.addEventListener("DOMContentLoaded", () =>
 
 class App extends Engine
 {
-    start()
+    async start()
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
-        
+
         this.renderer = new Renderer(gl);
+        this.loader = new GLTFLoader();
+        await this.loader.load("./assets/models/monkey/monkey.gltf"); // also sets defaultScene reference
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
@@ -55,32 +59,22 @@ class App extends Engine
             height: 1
         });
 
-        this.floor = new Node();
-        this.floor.model = floorModel;
-        this.floor.texture = greenTexture;
+        this.floor = new Node({
+            model:  floorModel,
+            texture:  greenTexture
+        });
+        
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
-        this.player = new Node();
+        this.player = await this.loader.loadNode("Player"); // TODO: Load monkey from here instead of default cube
         mat4.fromTranslation(this.player.transform, [0, 1, -5]);
 
-        // Use this method instead of this.player.model = ...
-        Object.assign(this.player, {
-            model: cubeModel,
-            texture: blueTexture,
-            translation: vec3.set(vec3.create(), 0, 1, 0),
-            rotation: vec3.set(vec3.create(), 0, 0, 0),
-            velocity: vec3.set(vec3.create(), 0, 0, 0),
-            maxSpeed: 3,
-            friction: 0.2,
-            acceleration: 20
-        });
-
+        // this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene = new Scene();
         this.scene.addNode(this.floor);
         this.scene.addNode(this.player);
 
         this.camera = new Camera();
-        // mat4.fromTranslation(this.camera.transform, [0, 1, this.viewDistance]);
         this.player.addChild(this.camera);
     }
 
@@ -103,7 +97,7 @@ class App extends Engine
 
     render()
     {
-        if (this.renderer)
+        if (this.renderer && this.camera)
         {
             this.renderer.render(this.scene, this.camera);
         }
@@ -111,14 +105,17 @@ class App extends Engine
 
     resize()
     {
-        const w = this.canvas.clientWidth;
-        const h = this.canvas.clientHeight;
-        const aspect = w / h;
-        const FOVy = Math.PI / 2;
-        const near = 0.1;
-        const far = 100;
+        if (this.camera)
+        {
+            const w = this.canvas.clientWidth;
+            const h = this.canvas.clientHeight;
+            const aspect = w / h;
+            const FOVy = Math.PI / 2;
+            const near = 0.1;
+            const far = 100;
 
-        mat4.perspective(this.camera.projection, FOVy, aspect, near, far);
+            mat4.perspective(this.camera.projection, FOVy, aspect, near, far);
+        }
     }
 
     createModel(model)
