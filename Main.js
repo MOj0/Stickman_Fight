@@ -31,7 +31,6 @@ class App extends Engine
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
 
-        this.renderer = new Renderer(gl);
         this.loader = new GLTFLoader();
         await this.loader.load("./assets/models/monkey/monkey.gltf"); // also sets defaultScene reference
 
@@ -66,7 +65,7 @@ class App extends Engine
         
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
-        this.player = await this.loader.loadNode("Player"); // TODO: Load monkey from here instead of default cube
+        this.player = await this.loader.loadNode("Player");
         mat4.fromTranslation(this.player.transform, [0, 1, -5]);
 
         // this.scene = await this.loader.loadScene(this.loader.defaultScene);
@@ -76,6 +75,9 @@ class App extends Engine
 
         this.camera = new Camera();
         this.player.addChild(this.camera);
+
+        this.renderer = new Renderer(gl);
+        this.renderer.prepareScene(this.scene);
     }
 
     update()

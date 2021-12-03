@@ -278,39 +278,39 @@ export class GLTFLoader
         return mesh;
     }
 
-    // async loadCamera(nameOrIndex)
-    // {
-    //     const gltfSpec = this.findByNameOrIndex(this.gltf.cameras, nameOrIndex);
-    //     if (this.cache.has(gltfSpec))
-    //     {
-    //         return this.cache.get(gltfSpec);
-    //     }
-    //     if (gltfSpec.type === 'perspective')
-    //     {
-    //         const persp = gltfSpec.perspective;
-    //         const camera = new PerspectiveCamera({
-    //             aspect: persp.aspectRatio,
-    //             fov: persp.yfov,
-    //             near: persp.znear,
-    //             far: persp.zfar,
-    //         });
-    //         this.cache.set(gltfSpec, camera);
-    //         return camera;
-    //     } else if (gltfSpec.type === 'orthographic')
-    //     {
-    //         const ortho = gltfSpec.orthographic;
-    //         const camera = new OrthographicCamera({
-    //             left: -ortho.xmag,
-    //             right: ortho.xmag,
-    //             bottom: -ortho.ymag,
-    //             top: ortho.ymag,
-    //             near: ortho.znear,
-    //             far: ortho.zfar,
-    //         });
-    //         this.cache.set(gltfSpec, camera);
-    //         return camera;
-    //     }
-    // }
+    async loadCamera(nameOrIndex)
+    {
+        const gltfSpec = this.findByNameOrIndex(this.gltf.cameras, nameOrIndex);
+        if (this.cache.has(gltfSpec))
+        {
+            return this.cache.get(gltfSpec);
+        }
+        if (gltfSpec.type === 'perspective')
+        {
+            const persp = gltfSpec.perspective;
+            const camera = new PerspectiveCamera({
+                aspect: persp.aspectRatio,
+                fov: persp.yfov,
+                near: persp.znear,
+                far: persp.zfar,
+            });
+            this.cache.set(gltfSpec, camera);
+            return camera;
+        } else if (gltfSpec.type === 'orthographic')
+        {
+            const ortho = gltfSpec.orthographic;
+            const camera = new OrthographicCamera({
+                left: -ortho.xmag,
+                right: ortho.xmag,
+                bottom: -ortho.ymag,
+                top: ortho.ymag,
+                near: ortho.znear,
+                far: ortho.zfar,
+            });
+            this.cache.set(gltfSpec, camera);
+            return camera;
+        }
+    }
 
     async loadNode(nameOrIndex)
     {
@@ -334,7 +334,6 @@ export class GLTFLoader
         // }
         if (gltfSpec.mesh !== undefined)
         {
-            console.log("FOUND MESH");
             options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
 
