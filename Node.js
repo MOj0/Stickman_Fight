@@ -1,17 +1,32 @@
-import { mat4} from "./lib/gl-matrix-module.js";
+import { mat4, vec3, quat } from "./lib/gl-matrix-module.js";
+import { Utils } from "./Utils.js";
 
 export class Node
 {
-    constructor()
+    constructor(options)
     {
+        Utils.init(this, Node.defaults, options);
+
         this.transform = mat4.create(); // "local" transform of current node
+        this.updateTransform();
+
         this.children = [];
         this.parent = null;
     }
 
+    updateTransform()
+    {
+        const t = this.transform;
+        const degrees = this.rotation.map(x => x * 180 / Math.PI);
+        const q = quat.fromEuler(quat.create(), ...degrees);
+        const v = vec3.clone(this.translation);
+        const s = vec3.clone(this.scale);
+        mat4.fromRotationTranslationScale(t, q, v, s);
+    }
+
     getGlobalTransform()
     {
-        if(!this.parent) // base case
+        if (!this.parent) // base case
         {
             return mat4.clone(this.transform);
         }
@@ -29,7 +44,7 @@ export class Node
     removeChild(node)
     {
         const index = this.children.indexOf(node);
-        if(index >= 0)
+        if (index >= 0)
         {
             this.children.splice(index, 1);
             node.parent = null;
@@ -40,17 +55,28 @@ export class Node
     // Runs functions before and after on the current node and all its children
     traverse(before, after)
     {
-        if(before) // Before we traverse, apply function to current node
+        if (before) // Before we traverse, apply function to current node
         {
             before(this);
         }
-        for(const child of this.children) // traverse
+        for (const child of this.children) // traverse
         {
             child.traverse(before, after);
         }
-        if(after)
+        if (after)
         {
             after(this);
         }
     }
 }
+
+
+Node.defaults = {
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0],
+    scale: [1, 1, 1],
+    aabb: {
+        min: [0, 0, 0],
+        max: [0, 0, 0],
+    },
+};
