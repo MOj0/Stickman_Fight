@@ -147,7 +147,7 @@ export class GLTFLoader
 
     async loadSampler(nameOrIndex)
     {
-        const gltfSpec = this.findByNameOrIndex(tihs.gltf.samplers, nameOrIndex);
+        const gltfSpec = this.findByNameOrIndex(this.gltf.samplers, nameOrIndex);
         if (this.cache.has(gltfSpec))
         {
             return this.cache.get(gltfSpec);
