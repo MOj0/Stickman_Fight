@@ -17,6 +17,9 @@ export class Camera extends Node
         this.keyupHandler = this.keyupHandler.bind(this);
         this.wheelHandler = this.wheelHandler.bind(this);
         this.keys = {};
+
+        this.twopi = Math.PI * 2;
+        this.halfpi = Math.PI / 2 - 0.01; // Add a small decimal to get rid of edge case
     }
 
     update(dt)
@@ -119,14 +122,10 @@ export class Camera extends Node
         c.rotation[0] -= dy * c.mouseSensitivity;
         c.rotation[1] -= dx * c.mouseSensitivity;
 
-        const pi = Math.PI;
-        const twopi = pi * 2;
-        const halfpi = pi / 2 - 0.01; // Add a small decimal to get rid of edge case
-
-        c.rotation[0] = Math.min(0, Math.max(-halfpi, c.rotation[0]));
+        c.rotation[0] = Math.min(0, Math.max(-this.halfpi, c.rotation[0]));
 
         // Constrain yaw to range [0, pi * 2], we don't want huge angles because of floating point rounding error
-        c.rotation[1] = ((c.rotation[1] % twopi) + twopi) % twopi;
+        c.rotation[1] = ((c.rotation[1] % this.twopi) + this.twopi) % this.twopi;
     }
 
     keydownHandler(e)
