@@ -44,16 +44,9 @@ class App extends Engine
         this.viewDistance = 3;
 
         const floorModel = this.createModel(FloorModel);
-        const cubeModel = this.createModel(CubeModel);
         const greenTexture = Engine.createTexture(gl, {
             // options object
             data: new Uint8Array([0, 255, 0, 255]),
-            width: 1,
-            height: 1
-        });
-        const blueTexture = Engine.createTexture(gl, {
-            // options object
-            data: new Uint8Array([0, 0, 255, 255]),
             width: 1,
             height: 1
         });
@@ -65,14 +58,17 @@ class App extends Engine
         
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
-        this.player = await this.loader.loadNode("Player");
+        // this.player = await this.loader.loadNode("Player");
         // mat4.fromTranslation(this.player.transform, [0, 1, -5]); // doesn't do anything?
-        this.player.updateTransform();
+        // this.player.updateTransform();
 
-        // this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        this.scene = new Scene(); // create Scene manually
+        this.scene = await this.loader.loadScene(this.loader.defaultScene);
+        // this.scene = new Scene(); // create Scene manually
+
         this.scene.addNode(this.floor);
-        this.scene.addNode(this.player);
+        // this.scene.addNode(this.player);
+
+        this.player = this.getNodeByName(this.scene.nodes, "Player"); // Find Player node in scene.nodes
 
         this.camera = new Camera(); // create Camera manually
         this.player.addChild(this.camera);
@@ -118,6 +114,17 @@ class App extends Engine
             const far = 100;
 
             mat4.perspective(this.camera.projection, FOVy, aspect, near, far);
+        }
+    }
+
+    getNodeByName(nodes, name)
+    {
+        for(const node of nodes)
+        {
+            if(node.name && node.name == name)
+            {
+                return node;
+            }
         }
     }
 
