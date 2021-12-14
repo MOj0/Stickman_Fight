@@ -33,11 +33,12 @@ class App extends Engine
 
         this.loader = new GLTFLoader();
         //await this.loader.load("./assets/models/simpleStickman/simpleStickman.gltf"); // also sets defaultScene reference
-        await this.loader.load("./assets/models/character/character.gltf"); // also sets defaultScene reference
-        //await this.loader.load("./assets/models/RiggedSimple.gltf"); // also sets defaultScene reference
+        await this.loader.load("./assets/models/stickman/stickman.gltf");
+        //await this.loader.load("./assets/models/character/character.gltf");
+        //await this.loader.load("./assets/models/RiggedSimple.gltf");
 
 
-        /*let m = this.loader.parseMesh(0);*/
+        // let m = this.loader.parseMesh(0);
         let animations = this.loader.parseAnimation(0);
         console.log(animations);
 
