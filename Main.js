@@ -32,7 +32,16 @@ class App extends Engine
         const gl = this.gl;
 
         this.loader = new GLTFLoader();
-        await this.loader.load("./assets/models/simpleStickman/simpleStickman.gltf"); // also sets defaultScene reference
+        // await this.loader.load("./assets/models/simpleStickman/simpleStickman.gltf"); // also sets defaultScene reference
+        await this.loader.load("./assets/models/stickman/stickman.gltf");
+        //await this.loader.load("./assets/models/character/character.gltf");
+        //await this.loader.load("./assets/models/RiggedSimple.gltf");
+
+
+        // let m = this.loader.parseMesh(0);
+
+        let animations = this.loader.parseAnimation(0);
+        console.log("Loaded animation: ", animations);
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
@@ -58,7 +67,7 @@ class App extends Engine
         
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
-        // this.player = await this.loader.loadNode("Player");
+        // this.player = await this.loader.loadNode("Character");
         // mat4.fromTranslation(this.player.transform, [0, 1, -5]); // doesn't do anything?
         // this.player.updateTransform();
 
@@ -68,7 +77,7 @@ class App extends Engine
         this.scene.addNode(this.floor);
         // this.scene.addNode(this.player);
 
-        this.player = this.getNodeByName(this.scene.nodes, "Player"); // Find Player node in scene.nodes
+        this.player = this.getNodeByName(this.scene.nodes, "Armature"); // Find Player node in scene.nodes
 
         this.camera = new Camera(); // create Camera manually
         this.player.addChild(this.camera);
@@ -156,7 +165,7 @@ class App extends Engine
 
     pointerlockchangeHandler()
     {
-        if (document.pointerLockElement === this.canvas)
+        if (document.pointerLockElement === this.canvas && this.camera)
         {
             this.camera.enable();
         }
