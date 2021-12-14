@@ -61,7 +61,7 @@ export class GLTFLoader
         this.gltf = await this.fetchJson(url);
         this.defaultScene = this.gltf.scene || 0; // Reference to the scene object
         if(this.gltf.skins) this.fixSkinData(); // Fixes unnamed joints, etc.
-        console.log(this.gltf);
+        console.log("Loaded gltf: ", this.gltf);
     }
 
     async loadImage(nameOrIndex)

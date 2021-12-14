@@ -5,13 +5,13 @@ export class Node
 {
     constructor(options)
     {
+        this.children = []; // Children have to be initialized first!
+        this.parent = null;
+        
         Utils.init(this, Node.defaults, options);
 
         this.transform = mat4.create(); // "local" transform of current node
         this.updateTransform();
-
-        this.children = [];
-        this.parent = null;
     }
 
     updateTransform()
