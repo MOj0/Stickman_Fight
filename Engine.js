@@ -8,7 +8,6 @@ export class Engine
         this._initGL(glOptions);
         this.start();
 
-        // this._update is a callback to be executed BEFORE repaint
         requestAnimationFrame(this._update);
     }
 

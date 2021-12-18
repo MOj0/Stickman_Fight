@@ -76,11 +76,11 @@ export class Camera extends Node
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
 
         // Update the final transform
-        const t = player.transform;
-        mat4.identity(t);
-        mat4.translate(t, t, player.translation);
-        mat4.rotateY(t, t, player.rotation[1]); // Update with camera rotation so its the same
-        mat4.rotateX(t, t, player.rotation[0]);
+        const p = player.transform;
+        mat4.identity(p);
+        mat4.translate(p, p, player.translation);
+        mat4.rotateY(p, p, player.rotation[1]); // Update with camera rotation so its the same
+        mat4.rotateX(p, p, player.rotation[0]);
 
         // Update camera rotation
         mat4.identity(c.transform);

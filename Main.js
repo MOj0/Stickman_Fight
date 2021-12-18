@@ -1,14 +1,13 @@
+"use strict";
+
 import { Engine } from "./Engine.js";
-import { mat4, vec3 } from './lib/gl-matrix-module.js';
-// import { GUI } from './lib/dat.gui.module.js';
+import { mat4, quat } from './lib/gl-matrix-module.js';
 import { Node } from "./Node.js";
 import * as FloorModel from "./floor.js";
-import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
 import { Camera } from "./Camera.js";
-import { Scene } from "./Scene.js";
-import { Player } from "./Player.js";
 import { GLTFLoader } from "./GLTFLoader.js";
+import { Armature } from "./Armature.js";
 
 
 document.addEventListener("DOMContentLoaded", () =>
@@ -33,15 +32,18 @@ class App extends Engine
 
         this.loader = new GLTFLoader();
         // await this.loader.load("./assets/models/simpleStickman/simpleStickman.gltf"); // also sets defaultScene reference
-        await this.loader.load("./assets/models/stickman/stickman.gltf");
+        // await this.loader.load("./assets/models/stickman/stickman.gltf");
         //await this.loader.load("./assets/models/character/character.gltf");
-        //await this.loader.load("./assets/models/RiggedSimple.gltf");
+        await this.loader.load("./assets/models/RiggedSimple/RiggedSimple.gltf");
 
+        let m = this.loader.parseMesh(0);
+        console.log("M", m);
 
-        // let m = this.loader.parseMesh(0);
+        this.animation = await this.loader.parseAnimation(0); // HashMap of objects of time and values
+        console.log("Loaded animation: ", this.animation);
 
-        let animations = this.loader.parseAnimation(0);
-        console.log("Loaded animation: ", animations);
+        this.armature = new Armature().loadGLTFSkin(m.armature);
+        console.log("armature", this.armature);
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
@@ -50,6 +52,7 @@ class App extends Engine
 
         this.time = Date.now();
         this.startTime = this.time;
+        this.sinceStart = 0;
         this.viewDistance = 3;
 
         const floorModel = this.createModel(FloorModel);
@@ -61,10 +64,10 @@ class App extends Engine
         });
 
         this.floor = new Node({
-            model:  floorModel,
-            texture:  greenTexture
+            model: floorModel,
+            texture: greenTexture
         });
-        
+
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
         // this.player = await this.loader.loadNode("Character");
@@ -91,6 +94,7 @@ class App extends Engine
         this.time = Date.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
+        this.sinceStart = (this.sinceStart + dt) % 100;
 
         if (this.camera)
         {
@@ -100,6 +104,17 @@ class App extends Engine
         if (this.physics)
         {
             this.physics.update(dt);
+        }
+
+        if (this.armature)
+        {
+            const sec = 3;
+            const keyframeIndex = ~~((this.sinceStart % sec) / sec * 3);
+
+            quat.copy(this.armature.joints[1].rotation, this.animation.joint0.rotation.samples[keyframeIndex].v);
+            this.armature.update();
+            // console.log(this.armature.joints[1].rotation);
+            // Something is happening... TODO: Render the animation!
         }
     }
 
@@ -128,9 +143,9 @@ class App extends Engine
 
     getNodeByName(nodes, name)
     {
-        for(const node of nodes)
+        for (const node of nodes)
         {
-            if(node.name && node.name == name)
+            if (node.name && node.name == name)
             {
                 return node;
             }
