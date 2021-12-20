@@ -26,6 +26,10 @@ export class Camera extends Node
     {
         const c = this;
         const player = this.parent;
+        // const tneki = player.children[0].transform;
+        // mat4.identity(tneki);
+        // mat4.translate(tneki, tneki, player.children[0].translation);
+       
 
         player.rotation[1] = c.rotation[1];
 

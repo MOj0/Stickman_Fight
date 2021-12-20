@@ -40,7 +40,7 @@ class App extends Engine
 
         // let m = this.loader.parseMesh(0);
 
-        let animations = this.loader.parseAnimation(0);
+        let animations = this.loader.parseAnimation(1);
         console.log("Loaded animation: ", animations);
 
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
@@ -78,7 +78,9 @@ class App extends Engine
         // this.scene.addNode(this.player);
 
         this.player = this.getNodeByName(this.scene.nodes, "Armature"); // Find Player node in scene.nodes
-
+        this.player.animations = animations;
+        // console.log(this.player);
+        
         this.camera = new Camera(); // create Camera manually
         this.player.addChild(this.camera);
 
