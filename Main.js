@@ -39,7 +39,7 @@ class App extends Engine
             model: floorModel,
             texture: greenTexture
         });
-        mat4.fromScaling(this.floor.transform, [40, 1, 40]);
+        mat4.fromScaling(this.floor.transform, [30, 1, 30]);
 
         this.loader = new GLTFLoader();
 

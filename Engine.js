@@ -53,7 +53,6 @@ export class Engine
         // Check if client changed the window (canvas) size
         if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight)
         {
-            console.log(canvas.clientWidth);
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
 
