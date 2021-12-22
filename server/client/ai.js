@@ -1,4 +1,4 @@
-class Ai{
+export class Ai{
   constructor(id, player, x, y, life){
     this.id = id;
     this.player = player;
@@ -7,7 +7,7 @@ class Ai{
     this.r = 100;
     this.life = life;
 
-    this.image = playerImg[parseInt(this.player.split(':')[0])]; // Gets team ID from player name
+    // this.image = playerImg[parseInt(this.player.split(':')[0])]; // Gets team ID from player name
   }
 
   show() {

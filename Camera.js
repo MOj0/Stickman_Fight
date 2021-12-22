@@ -26,7 +26,7 @@ export class Camera extends Node
     {
         const c = this;
         const player = this.parent;     
-
+        // console.log(player.translation);
         player.rotation[1] = c.rotation[1];
 
         const forward = vec3.set(vec3.create(),

@@ -187,7 +187,7 @@ io.sockets.on('connection',
         console.log(socket.id + " sent a START request with UID: " + uid );
         let playerName = ""+Math.random();
         // Creating new Player object with data from database
-        var player = new Player(socket.id, uid, playerName, random(1000, 2500), random(1000, 2500), 100, "", 100, 0, 0, inventory );
+        var player = new Player(socket.id, uid, playerName, random(10, 25), random(10, 25), 100, "", 100, 0, 0, inventory );
 
         data(player); // Data that is sent as a response(player object)
         players.push(player);
@@ -234,7 +234,7 @@ io.sockets.on('connection',
               if(player.timeout){
                 console.log("Respawning player: "+player.player);
                 setTimeout(function() {
-                  updatePlayer(player.id, random(1000, 2500), random(1000, 2500), player.maxLife);
+                  updatePlayer(player.id, random(10, 25), random(10, 25), player.maxLife);
                 }, 4000);
                 player.timeout = false;
 

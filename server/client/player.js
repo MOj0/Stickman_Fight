@@ -1,4 +1,4 @@
-class Player{
+export class MPlayer{
   constructor(player, x, y, life, maxLife, xp, level, spawn, inventory){
     this.player = player;
     this.w = 100;
@@ -18,7 +18,7 @@ class Player{
 
     this.weaponType = 0;
     this.itemType = 1;
-    this.image = playerImg[0]; // Gets team ID from player name
+    //this.image = playerImg[0]; // Gets team ID from player name
 
     this.moveSpeed = 4;
 
