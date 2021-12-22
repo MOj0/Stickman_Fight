@@ -19,7 +19,7 @@ export class Camera extends Node
         this.keys = {};
 
         this.twopi = Math.PI * 2;
-        this.halfpi = Math.PI / 2 - 0.01; // Add a small decimal to get rid of edge case
+        this.halfpi = Math.PI / 2 - 0.01; // Subtract a small decimal to get rid of edge case
     }
 
     update(dt)
@@ -76,11 +76,15 @@ export class Camera extends Node
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
 
         // Update the final transform
+        // FIXME: Doesn't work 100% right!
         const p = player.transform;
         mat4.identity(p);
         mat4.translate(p, p, player.translation);
         mat4.rotateY(p, p, player.rotation[1]); // Update with camera rotation so its the same
         mat4.rotateX(p, p, player.rotation[0]);
+
+        // player.updateTransform(); // How about this??
+
 
         // Update camera rotation
         mat4.identity(c.transform);
@@ -151,5 +155,5 @@ Camera.defaults = {
     near: 0.01,
     far: 100,
     mouseSensitivity: 0.002,
-    viewDistance: 3
+    viewDistance: 12
 };
