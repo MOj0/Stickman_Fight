@@ -1,15 +1,24 @@
-import { mat4, vec3 } from './lib/gl-matrix-module.js';
+import { vec3, mat4 } from './lib/gl-matrix-module.js';
 import { shaders } from "./shaders.js";
 import { Engine } from "./Engine.js";
+import { Armature } from './Armature.js';
 
 export class Renderer
 {
-    /** @param {WebGL2RenderingContext} gl */
-    constructor(gl)
+    /**
+     *  @param {WebGL2RenderingContext} gl 
+     *  @param {Armature} armature
+    */
+    constructor(gl, armature, animation)
     {
         this.gl = gl;
         this.programs = Engine.buildPrograms(gl, shaders);
         this.glObjects = new Map();
+
+        this.armature = armature;
+        this.animation = animation;
+        this.timeOld = 0;
+        this.curFrame = this.curLerp = 0;
 
         gl.clearColor(0.45, 0.7, 1, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -126,10 +135,12 @@ export class Renderer
             gl.bindBuffer(bufferView.target, buffer);
         }
 
-        // This is an application-scoped convention, matching the shader
+        // This is an application-scoped convention, matching the shader (layout location)
         const attributeNameToIndexMap = {
             POSITION: 0,
-            TEXCOORD_0: 1
+            TEXCOORD_0: 1,
+            JOINTS_0: 2,
+            WEIGHTS_0: 3
         };
 
         for (const name in primitive.attributes)
@@ -137,7 +148,7 @@ export class Renderer
             const accessor = primitive.attributes[name];
             const bufferView = accessor.bufferView;
             const attributeIndex = attributeNameToIndexMap[name];
-
+            
             if (attributeIndex !== undefined)
             {
                 bufferView.target = gl.ARRAY_BUFFER;
@@ -187,13 +198,49 @@ export class Renderer
         }
     }
 
-    render(scene, camera)
+    render(scene, camera, sinceStart)
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
         const program = this.programs.shader;
+        const delta = sinceStart - (this.timeOld);
+
+        if (isNaN(this.curFrame) || this.curFrame > 100)
+            this.curFrame = 0;
+
+        this.curLerp += delta * 0.005;
+
+        // Ensure curLerp is in [0, 1]
+        while (this.curLerp >= 1)
+        {
+            this.curLerp -= 1;
+            this.curFrame++;
+        }
 
         gl.useProgram(program.program);
+
+        // ANIMATIONS
+        // This gets the animation for the current frame
+        const boneMatrices = this.armature.getBoneMatrices(this.animation, this.curFrame, this.curLerp, sinceStart);
+
+        // Use this to stop the animation
+        const identity = [
+            1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            0., 0., 0., 1.
+        ];
+        const nBones = boneMatrices.length / 16;
+        let identityBones = [];
+        for (let i = 0; i < nBones; i++)
+        {
+            identityBones[i] = identity;
+        }
+        identityBones = new Float32Array([].concat(...identityBones));
+
+        // console.log(boneMatrices);
+        // Send the animated bones to the uniform in the shader
+        gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices);
 
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
@@ -213,6 +260,8 @@ export class Renderer
         {
             this.renderNode(node, mvpMatrix);
         }
+
+        this.timeOld = sinceStart;
     }
 
     renderNode(node, mvpMatrix)
