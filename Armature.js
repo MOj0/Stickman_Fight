@@ -79,7 +79,6 @@ export class Armature
                 translation0 = animation[bone.name].translation.samples[keyframe % nKeyframes].v;
                 translation1 = animation[bone.name].translation.samples[(keyframe + 1) % nKeyframes].v;
 
-                // NOTE: Not used
                 scale0 = animation[bone.name].scale.samples[keyframe % nKeyframes].v;
                 scale1 = animation[bone.name].scale.samples[(keyframe + 1) % nKeyframes].v;
             }
@@ -88,15 +87,17 @@ export class Armature
             const localMatrix = mat4.create(); // Local matrix
             const offsetMatrix = mat4.create(); // Final matrix to apply to the weighted vertices
             const lquat = quat.create();
-            const lvec = vec3.create();
+            const lvecTranslate = vec3.create();
+            const lvecScale = vec3.create();
 
             // Spherical linear interpolation between the two bones' rotations,
             quat.slerp(lquat, rotation0, rotation1, lerpVal);
-            // linear interpolation between the locations
-            vec3.lerp(lvec, translation0, translation1, lerpVal);
+            // Lerp translation
+            vec3.lerp(lvecTranslate, translation0, translation1, lerpVal);
+            // Lerp scale
+            vec3.lerp(lvecScale, scale0, scale1, lerpVal);
 
-            mat4.fromRotationTranslation(localMatrix, lquat, lvec);
-            // mat4.fromRotationTranslationScale(localMatrix, lquat, lvec, SCALE); // TODO: Apply scale
+            mat4.fromRotationTranslationScale(localMatrix, lquat, lvecTranslate, lvecScale);
 
             // Use the bone hierarchy, important: all parents must be evaluated BEFORE their children
             if (bone.parent == null || bone.parent == -1)

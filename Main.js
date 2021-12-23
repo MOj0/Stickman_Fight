@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () =>
     new App(canvas);
 });
 
+// TODO: Use Perspective Camera, so it's actually 3D?
+
 class App extends Engine
 {
     async start()
