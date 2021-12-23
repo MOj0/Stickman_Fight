@@ -10,6 +10,7 @@ import { Mesh } from "./Mesh.js";
 import { Scene } from "./Scene.js";
 import { Node } from "./Node.js";
 import { Player } from "./Player.js";
+import { Armature } from "./Armature.js";
 
 // This class loads all GLTF resources and instantiates
 // the corresponding classes. Resources are loaded sequentially.
@@ -316,6 +317,7 @@ export class GLTFLoader
     async loadNode(nameOrIndex)
     {
         const gltfSpec = this.findByNameOrIndex(this.gltf.nodes, nameOrIndex);
+        const isPlayerNode = gltfSpec.name !== undefined && (gltfSpec.name == "Player" || gltfSpec.name == "Armature");
         if (this.cache.has(gltfSpec))
         {
             return this.cache.get(gltfSpec);
@@ -333,8 +335,21 @@ export class GLTFLoader
         {
             options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
+        if (isPlayerNode)
+        {
+            const skin = this.loadSkin(0); // Armature / Skeleton from gltf
+            const armature = new Armature(skin);
+            const animations = [];
+            for (const animIndex in this.gltf.animations)
+            {
+                animations.push(await this.parseAnimation(animIndex));
+            }
 
-        const isPlayerNode = gltfSpec.name !== undefined && (gltfSpec.name == "Player" || gltfSpec.name == "Armature");
+            options.armature = armature;
+            options.animations = animations;
+            options.currAnimation = 1;
+        }
+
         const node = isPlayerNode ? new Player(options) : new Node(options);
         this.cache.set(gltfSpec, node);
         return node;
@@ -363,7 +378,7 @@ export class GLTFLoader
         return scene;
     }
 
-    //Armature / Skeleton
+    // Armature / Skeleton
     loadSkin(index)
     {
         const skin = this.gltf.skins[index];
@@ -382,12 +397,12 @@ export class GLTFLoader
 
         while (stack.length > 0)
         {
-            const item = stack.pop(); 
+            const item = stack.pop();
             const bone = this.gltf.nodes[item[0]]; //Get node info for bone
             const parentIndex = item[1];
 
             // if (n.isJoint != true) continue; //Check preprocessing to make sure its actually a used node.
-            
+
             bones.push({
                 boneNum: skin.joints.indexOf(item[0]),
                 name: bone.name || null,
@@ -415,29 +430,11 @@ export class GLTFLoader
     async parseAnimation(index)
     {
         /*
-        NOTES: When Node isn't defined, ignore
-        interpolation values include LINEAR, STEP, CATMULLROMSPLINE, and CUBICSPLINE.
-
         - Spec supports multiple Animations, each one with a possible name.
         - Channel links samples to nodes. Each channel links what property is getting changed.
         - Samples, Input & Output points to accessors which holds key frame data.
         --- Input is the Key Frame Times
         --- Output is the key frame value change, if sample is rotation, the output is a quat.
-
-        "animations": [
-            {	"name": "Animation1",
-                "channels": [
-                { "sampler": 0, "target": { "node": 2, "path": "translation" } },
-                { "sampler": 1, "target": { "node": 2, "path": "rotation" } },
-                { "sampler": 2, "target": { "node": 2, "path": "scale" } }
-            ],
-
-            "samplers": [
-                { "input": 5, "interpolation": "LINEAR", "output": 6 },
-                { "input": 5, "interpolation": "LINEAR", "output": 7 },
-                { "input": 5, "interpolation": "LINEAR", "output": 8 }
-            ]
-        },
         */
 
         const anim = this.gltf.animations;
@@ -447,53 +444,49 @@ export class GLTFLoader
             return null;
         }
 
-        let rtn = {},
-            i, ii,
-            joint,
-            nPtr, //node ptr
-            sPtr, //sample ptr
-            chPtr; //channel ptr
+        const animation = {};
+        animation.name = (anim[index].name !== undefined) ? anim[index].name : "anim" + index;
 
-        //Save the name
-        rtn.name = (anim[index].name !== undefined) ? anim[index].name : "anim" + index;
-
-        //Process Channels and Samples.
-        for (var ich = 0; ich < anim[index].channels.length; ich++)
+        //Process Channels and Samples
+        for (const channelPtr of anim[index].channels)
         {
-            //Make sure we have a target
-            chPtr = anim[index].channels[ich];
-            if (chPtr.target.node == undefined) continue;
+            //Make sure we have a target (defined by specification)
+            if (channelPtr.target.node == undefined) continue;
 
-            //Make sure node points to a joint with a name.
-            nPtr = this.gltf.nodes[chPtr.target.node];
-            if (!nPtr.isJoint || nPtr.name === undefined)
+            //Make sure node points to a joint with a name (we had to call fixSkinData() first!)
+            const nodePtr = this.gltf.nodes[channelPtr.target.node];
+            if (!nodePtr.isJoint || nodePtr.name === undefined)
             {
                 console.log("node is not a joint or doesn't have a name");
                 continue;
             }
 
             //Get sample data
-            sPtr = anim[index].samplers[chPtr.sampler];
+            const samplerPtr = anim[index].samplers[channelPtr.sampler];
 
             // Process animation accessor from binary file
-            const tData2 = await this.processAccessor(sPtr.input);
-            const vData2 = await this.processAccessor(sPtr.output);
-            // console.log("tData2", tData2);
-            // console.log("vData2", vData2);
+            const times = await this.processAccessor(samplerPtr.input); // Input - time
+            const values = await this.processAccessor(samplerPtr.output); // Output - value
 
-            if (!rtn[nPtr.name]) joint = rtn[nPtr.name] = {};
-            else joint = rtn[nPtr.name];
+            animation.nKeyframes = times.count; // Set number of keyframes
 
-            var samples = [];
-            joint[chPtr.target.path] = { interp: sPtr.interpolation, samples: samples };
+            let joint;
+            
+            if (!animation[nodePtr.name])
+                joint = animation[nodePtr.name] = {};
+            else
+                joint = animation[nodePtr.name];
 
-            for (i = 0; i < tData2.count; i++)
+            const samples = [];
+            for (let i = 0; i < times.count; i++)
             {
-                ii = i * vData2.compLen;
-                samples.push({ t: tData2.data[i], v: vData2.data.slice(ii, ii + vData2.compLen) });
+                const ii = i * values.compLen;
+                samples.push({ t: times.data[i], v: values.data.slice(ii, ii + values.compLen) });
             }
+
+            joint[channelPtr.target.path] = { interp: samplerPtr.interpolation, samples: samples };
         }
-        return rtn;
+        return animation;
     }
 
 
@@ -506,23 +499,18 @@ export class GLTFLoader
     //it does help weed out bad data
     fixSkinData()
     {
-        // var complete = [],			//list of skeleton root nodes, prevent prcessing duplicate data that can exist in file
-        let s = this.gltf.skins,	//alias for skins
-            j,						//loop index
-            n;						//Node Ref
-
-        for (var i = 0; i < s.length; i++)
+        // let complete = [],			//list of skeleton root nodes, prevent prcessing duplicate data that can exist in file
+        const skins = this.gltf.skins;
+        for (const skinIndex in skins)
         {
-
-            //Loop through all specified joints and mark the nodes as joints.
-            for (j in s[i].joints)
+            //Loop through all specified joints and mark the nodes as joints (bones)
+            for (const jointIndex in skins[skinIndex].joints)
             {
-                n = this.gltf.nodes[s[i].joints[j]];
-                n.isJoint = true;
-                if (n.name === undefined || n.name == "") n.name = "joint" + j; //Need name to help tie animates to joints
+                const nodePtr = this.gltf.nodes[skins[skinIndex].joints[jointIndex]];
+                nodePtr.isJoint = true; // Set to joint - bone
+                if (nodePtr.name === undefined || nodePtr.name == "") nodePtr.name = "joint" + jointIndex; //Need name to help tie animates to joints
             }
         }
-
         this.linkSkinToMesh(); //Since we have skin data, Link Mesh to skin for easy parsing.
     }
 
@@ -568,15 +556,15 @@ export class GLTFLoader
         buf.dView = new DataView(buf); // IMPORTANT!
 
         switch (a.componentType)
-		{
-			case GLTFLoader.TYPE_FLOAT: TAry = Float32Array; DFunc = "getFloat32"; break;
-			case GLTFLoader.TYPE_SHORT: TAry = Int16Array; DFunc = "getInt16"; break;
-			case GLTFLoader.TYPE_UNSIGNED_SHORT: TAry = Uint16Array; DFunc = "getUint16"; break;
-			case GLTFLoader.TYPE_UNSIGNED_INT: TAry = Uint32Array; DFunc = "getUint32"; break;
-			case GLTFLoader.TYPE_UNSIGNED_BYTE: TAry = Uint8Array; DFunc = "getUint8"; break;
+        {
+            case GLTFLoader.TYPE_FLOAT: TAry = Float32Array; DFunc = "getFloat32"; break;
+            case GLTFLoader.TYPE_SHORT: TAry = Int16Array; DFunc = "getInt16"; break;
+            case GLTFLoader.TYPE_UNSIGNED_SHORT: TAry = Uint16Array; DFunc = "getUint16"; break;
+            case GLTFLoader.TYPE_UNSIGNED_INT: TAry = Uint32Array; DFunc = "getUint32"; break;
+            case GLTFLoader.TYPE_UNSIGNED_BYTE: TAry = Uint8Array; DFunc = "getUint8"; break;
 
-			default: console.log("ERROR processAccessor", "componentType unknown", a.componentType); return null; break;
-		}
+            default: console.log("ERROR processAccessor", "componentType unknown", a.componentType); return null; break;
+        }
 
         //When more then one accessor shares a buffer, The BufferView length is the whole section
         //but that won't work, so you need to calc the partition size of that whole chunk of data

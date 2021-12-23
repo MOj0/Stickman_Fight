@@ -5,17 +5,16 @@ import { Engine } from './Engine.js';
 import { Camera } from './Camera.js';
 import { GLTFLoader } from './GLTFLoader.js';
 import { Renderer } from './Renderer.js';
-import { Armature } from './Armature.js';
 import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
+import { PerspectiveCamera } from './PerspectiveCamera.js';
+import { OrthographicCamera } from './OrthographicCamera.js';
 
 document.addEventListener("DOMContentLoaded", () =>
 {
     const canvas = document.querySelector("canvas");
     new App(canvas);
 });
-
-// TODO: Use Perspective Camera, so it's actually 3D?
 
 class App extends Engine
 {
@@ -49,21 +48,19 @@ class App extends Engine
         await this.loader.load("./assets/models/stickman/stickman.gltf");
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
-
-        // console.log("scene nodes", this.scene.nodes);
+        this.scene.addNode(this.floor);
 
         this.player = this.getNodeByName(this.scene.nodes, "Armature");
         this.camera = new Camera();
-        this.scene.addNode(this.floor);
+        // TODO: Game looks 2D, use one these cameras???
+        // this.camera = new PerspectiveCamera();
+        // this.camera = new OrthographicCamera();
         this.player.addChild(this.camera);
+        
+        // At this point all nodes are loaded
+        console.log("Nodes in the scene", this.scene.nodes);
 
-        const skin = this.loader.loadSkin(0);
-        const armature = new Armature(skin);
-        const animation = await this.loader.parseAnimation(1);
-        // console.log("armature", armature);
-        // console.log("animation", animation);
-
-        this.renderer = new Renderer(this.gl, armature, animation);
+        this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
     }
 

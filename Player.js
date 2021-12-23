@@ -1,9 +1,17 @@
 import { Node } from "./Node.js";
 import { vec3 } from './lib/gl-matrix-module.js';
+import { Armature } from "./Armature.js";
 
+/**
+ * Class representing the Player, it also contains armature and animations!
+ */
 export class Player extends Node
 {
-    constructor(options = {})
+    // NOTE: This type annotation doesn't really work
+    /**
+     * @param {{armature: Armature}} options 
+     */
+    constructor(options = {armature : null, animations: null, currAnimation: null})
     {
         super(options);
 
@@ -11,8 +19,5 @@ export class Player extends Node
         this.maxSpeed = 3;
         this.friction = 0.2;
         this.acceleration = 20;
-
-        // TODO:
-        // this.armature = ...
     }
 }

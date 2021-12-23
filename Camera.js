@@ -35,7 +35,7 @@ export class Camera extends Node
             Math.cos(player.rotation[1]), 0, -Math.sin(player.rotation[1]));
 
         // 1: add movement acceleration
-        let acc = vec3.create();
+        const acc = vec3.create();
         if (this.keys['KeyW'])
         {
             vec3.add(acc, acc, forward);
@@ -52,6 +52,9 @@ export class Camera extends Node
         {
             vec3.sub(acc, acc, right);
         }
+
+        const moving = this.keys['KeyW'] || this.keys['KeyS']|| this.keys['KeyA']|| this.keys['KeyD'];
+        player.currAnimation = moving ? 4 : 1;
 
         // 2: update velocity
         vec3.scaleAndAdd(player.velocity, player.velocity, acc, dt * player.acceleration);
@@ -84,7 +87,6 @@ export class Camera extends Node
         mat4.rotateX(p, p, player.rotation[0]);
 
         // player.updateTransform(); // How about this??
-
 
         // Update camera rotation
         mat4.identity(c.transform);

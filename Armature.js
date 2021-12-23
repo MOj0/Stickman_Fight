@@ -3,9 +3,10 @@ import { vec3, mat4, quat } from './lib/gl-matrix-module.js';
 export class Armature
 {
     /**
-     * This constrcutor adds matrices (localMatrix, worldMatrix, inverseBindpose) 
-     * to the joints, so they are ready for calculation
-     * @param {Array} skin Array of parsed joints
+     * This class is the Armature / Skeleton / Skin 
+     * which also has localMatrix, worldMatrix, inverseBindpose
+     * so the bones are ready for animation
+     * @param {Array} skin Array of loaded joints
      */
     constructor(skin)
     {
@@ -50,10 +51,10 @@ export class Armature
 
 
     // Returns bone matrices for the current frame
-    getBoneMatrices(animation, keyframe, lerpVal, sinceStart)
+    getBoneMatrices(animation, keyframe, lerpVal)
     {
         const flat = [];
-        const nKeyframes = 4; //animation.Root.rotation.samples.length; // TODO: Improve
+        const nKeyframes = animation.nKeyframes;
 
         for (const i in this.bones)
         {
@@ -73,6 +74,7 @@ export class Armature
             }
             else
             {
+                // TODO: Use ACTUAL keyframe values (samples[index].t)
                 rotation0 = animation[bone.name].rotation.samples[keyframe % nKeyframes].v;
                 rotation1 = animation[bone.name].rotation.samples[(keyframe + 1) % nKeyframes].v;
 

@@ -2,21 +2,17 @@ import { vec3, mat4 } from './lib/gl-matrix-module.js';
 import { shaders } from "./shaders.js";
 import { Engine } from "./Engine.js";
 import { Armature } from './Armature.js';
+import { Player } from './Player.js';
 
 export class Renderer
 {
-    /**
-     *  @param {WebGL2RenderingContext} gl 
-     *  @param {Armature} armature
-    */
-    constructor(gl, armature, animation)
+    /** @param {WebGL2RenderingContext} gl */
+    constructor(gl)
     {
         this.gl = gl;
         this.programs = Engine.buildPrograms(gl, shaders);
         this.glObjects = new Map();
 
-        this.armature = armature;
-        this.animation = animation;
         this.timeOld = 0;
         this.curFrame = this.curLerp = 0;
 
@@ -148,7 +144,7 @@ export class Renderer
             const accessor = primitive.attributes[name];
             const bufferView = accessor.bufferView;
             const attributeIndex = attributeNameToIndexMap[name];
-            
+
             if (attributeIndex !== undefined)
             {
                 bufferView.target = gl.ARRAY_BUFFER;
@@ -208,7 +204,7 @@ export class Renderer
         if (isNaN(this.curFrame) || this.curFrame > 100)
             this.curFrame = 0;
 
-        this.curLerp += delta * 0.005;
+        this.curLerp += delta * 0.008;
 
         // Ensure curLerp is in [0, 1]
         while (this.curLerp >= 1)
@@ -218,30 +214,6 @@ export class Renderer
         }
 
         gl.useProgram(program.program);
-
-        // ANIMATIONS
-        // This gets the animation for the current frame
-        const boneMatrices = this.armature.getBoneMatrices(this.animation, this.curFrame, this.curLerp, sinceStart);
-
-        // Use this to stop the animation
-        const identity = [
-            1., 0., 0., 0.,
-            0., 1., 0., 0.,
-            0., 0., 1., 0.,
-            0., 0., 0., 1.
-        ];
-        const nBones = boneMatrices.length / 16;
-        let identityBones = [];
-        for (let i = 0; i < nBones; i++)
-        {
-            identityBones[i] = identity;
-        }
-        identityBones = new Float32Array([].concat(...identityBones));
-
-        // console.log(boneMatrices);
-        // Send the animated bones to the uniform in the shader
-        gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices);
-
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
@@ -249,11 +221,35 @@ export class Renderer
         const cameraMatrix = camera.getGlobalTransform();
         mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
 
+        /** @type {Player} */
         const player = camera.parent;
         const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
         const playerPosition = [player.transform[12], player.transform[13], player.transform[14]];
         const up = [0, 1, 0];
         const viewMatrix = mat4.lookAt(mat4.create(), cameraPosition, playerPosition, up); // look at the player
+
+        // ANIMATIONS
+        // Gets the bone positions for the current frame of animation
+        const animation = player.animations[player.currAnimation];
+        const boneMatrices = player.armature.getBoneMatrices(animation, this.curFrame, this.curLerp);
+
+        // // Use this to stop the animation
+        // const identity = [
+        //     1., 0., 0., 0.,
+        //     0., 1., 0., 0.,
+        //     0., 0., 1., 0.,
+        //     0., 0., 0., 1.
+        // ];
+        // const nBones = boneMatrices.length / 16;
+        // let identityBones = [];
+        // for (let i = 0; i < nBones; i++)
+        // {
+        //     identityBones[i] = identity;
+        // }
+        // identityBones = new Float32Array([].concat(...identityBones));
+
+        // console.log(boneMatrices);
+        gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
 
         const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
         for (const node of scene.nodes)
