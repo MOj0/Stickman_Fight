@@ -10,6 +10,8 @@ import { Scene } from "./Scene.js";
 import { Player } from "./Player.js";
 import { MPlayer } from "./server/client/player.js";
 import { Ai } from "./server/client/ai.js";
+import { Laser } from "./server/client/bullet.js";
+
 import { GLTFLoader } from "./GLTFLoader.js";
 
 
@@ -21,7 +23,7 @@ let lasers = [];
 let lasersEnemy = [];
 let otherPlayers = [];
 let otherPlayerNodes = [];
-
+const HIT_RANGE = 0.1;
 
 document.addEventListener("DOMContentLoaded", () =>
 {
@@ -39,11 +41,6 @@ document.addEventListener("DOMContentLoaded", () =>
                             playerData.spawnID, playerData.inventory);
         console.log(playerData);
     });
-    socket.on('updatePosition', function(x, y){
-        mPlayer.x = x;
-        mPlayer.y = y;
-        console.log("Position from server: "+x+" - "+y);
-    });
     socket.on('health', function(life){
         mPlayer.life = life;
         console.log("Life from server: "+life);
@@ -56,28 +53,31 @@ document.addEventListener("DOMContentLoaded", () =>
         mPlayer.level = level;
         console.log("LEVEL from server: "+level);
     });
-
-    // Remove what won't be needed
-    socket.on('updateInventory', function(inventory){
-        mPlayer.inventory = inventory;
-        console.log("INVENTORY from server: "+inventory);
-    });
-    socket.on('updateMaxLife', function(newMaxLife){
-        mPlayer.maxLife = newMaxLife;
-        console.log("New MAXLIFE from server: "+newMaxLife);
-    });
-
+    
     const canvas = document.querySelector("canvas");
     const app = new App(canvas);
 
+    socket.on('updatePosition', function(x, y){
+        mPlayer.x = x;
+        mPlayer.y = y;
+        let tmp = app.player;
+        tmp.translation = [mPlayer.x, 0, mPlayer.y];
+        tmp.updateTransform();
+        console.log("Position from server: "+x+" - "+y);
+    });
+    socket.on('broadcastRemovePlayer', function(playerName){
+        // Remove any players(nodes) that left the game
+        if (app.scene !== undefined) app.removeNodeByName(app.scene.nodes, playerName); 
+        console.log("Removing player: "+playerName);
+    });
     socket.on('heartbeat',
         function(players, lasersAll, spawnsAll, itemsAll){
         //console.log("HB", Date.now());
-        /*for (var i = 0; i < lasersAll.length; i++) {
+        for (var i = 0; i < lasersAll.length; i++) {
             lasersEnemy.push(new Laser(lasersAll[i].player, lasersAll[i].x,
             lasersAll[i].y, lasersAll[i].targetX, lasersAll[i].targetY,
             lasersAll[i].weaponType));
-        }*/
+        }
         // Receive and generate all other players
         otherPlayers.length = 0;
         otherPlayerNodes.length = 0;
@@ -101,14 +101,9 @@ document.addEventListener("DOMContentLoaded", () =>
                 model:  cubeModel,
                 texture:  cubeTexture
             });
-            //tmp.translation = [otherPlayers[i].x, 0, otherPlayers[i].y];
-            // otherPlayerNodes.push(tmp);
-            //let tmp = otherPlayerNodes[i];
             tmp.name = otherPlayers[i].player;
             if (app.scene !== undefined) app.scene.addNode(tmp);
-        }
-        // Remove any players(nodes) that left the game
-        
+        }       
 
         if (app.scene !== undefined) {
             for (let i in otherPlayers) {
@@ -177,7 +172,7 @@ class App extends Engine
         const cubeModel = this.createModel(CubeModel);
         const cubeTexture = Engine.createTexture(gl, {
             // options object
-            data: new Uint8Array([100, 100, 255, 255]),
+            data: new Uint8Array([100, 255, 255, 255]),
             width: 1,
             height: 1
         });
@@ -185,6 +180,7 @@ class App extends Engine
             model:  cubeModel,
             texture:  cubeTexture
         });
+        this.cube.name = "Aim";
         
 
         // this.player = await this.loader.loadNode("Character");
@@ -195,11 +191,8 @@ class App extends Engine
         // this.scene = new Scene(); // create Scene manually
 
         this.scene.addNode(this.floor);
-        /*for (let i in otherPlayers) {
-            let tmp = otherPlayerNodes[i];
-            tmp.name = otherPlayers[i].player;
-            this.scene.addNode(tmp);
-        }*/
+        this.scene.addNode(this.cube);
+
         console.log(this.scene);
 
         this.player = this.getNodeByName(this.scene.nodes, "Armature"); // Find Player node in scene.nodes
@@ -221,27 +214,31 @@ class App extends Engine
         if (mPlayer !== undefined && this.player !== undefined) {
             mPlayer.x = this.player.translation[0];
             mPlayer.y = this.player.translation[2];
+
+            mPlayer.mouseX = mPlayer.x - Math.sin(this.camera.rotation[1]);
+            mPlayer.mouseY = mPlayer.y - Math.cos(this.camera.rotation[1]);
+           
+            let tmp = this.getNodeByName(this.scene.nodes, "Aim");
+            for (var i = 0; i < lasers.length; i++) {
+                lasers[i].move();
+                tmp.translation = [lasers[i].x, 1, lasers[i].y];
+                tmp.updateTransform();
+                if (HIT_RANGE > Math.abs(lasers[i].x - lasers[i].targetX) + Math.abs(lasers[i].y - lasers[i].targetY)) {
+                    lasers.splice(i, 1);
+                }
+            }
+            mPlayer.health(lasersEnemy);
+            // Enemy lasers show/move/limit/remove
+            for (var i = 0; i < lasersEnemy.length; i++) {
+                lasersEnemy[i].move();
+                if (HIT_RANGE > Math.abs(lasersEnemy[i].x - lasersEnemy[i].targetX) + Math.abs(lasersEnemy[i].y - lasersEnemy[i].targetY)) {
+                    lasersEnemy.splice(i, 1);
+                }
+            }
+            // console.log(lasersEnemy, lasers);
             // console.log(mPlayer.x, mPlayer.y);
             socket.emit('update', mPlayer, lasers); // Send update message to server
         }
-
-        // Moving other players???
-        /*console.log("update");
-        if (otherPlayerNodes !== undefined && this.scene !== undefined) {
-            for (let i in otherPlayers) {
-                console.log(otherPlayers[i].player);
-                let tmp = this.getNodeByName(this.scene.nodes, otherPlayers[i].player);
-                if (tmp !== undefined) {
-                    tmp.translation = [otherPlayers[i].x, 0, otherPlayers[i].y];
-                    tmp.updateTransform();
-                    console.log([mPlayer.x, 0, mPlayer.y]);
-                    let t = tmp.transform;
-                    mat4.identity(t);
-                    mat4.translate(t, t, tmp.translation);
-                    
-                }
-            }
-        }*/
 
         if (this.camera)
         {
@@ -340,5 +337,11 @@ class App extends Engine
     mousedownHandler(e)
     {
         this.canvas.requestPointerLock();
+        if (e.which === 1) {
+            console.log("Left click...");
+            mPlayer.shoot(socket, lasers);
+        } else if (e.which === 3) {
+            console.log("Right click...");
+        }
     }
 }
