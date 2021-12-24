@@ -347,7 +347,7 @@ export class GLTFLoader
 
             options.armature = armature;
             options.animations = animations;
-            options.currAnimation = 1;
+            options.currAnimation = "Idle"; // Default animation
         }
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
@@ -388,20 +388,18 @@ export class GLTFLoader
             console.log("Erorr: no skins in the gltf found.");
             return;
         }
-
-        const rootBoneIndex = skin.joints[0]; // Root is always first ? 
+        
         const bones = [];
         const stack = [];
 
+        const rootBoneIndex = skin.joints[0]; // Root is always first ?
         stack.push([rootBoneIndex, null]); // [boneIndex, parentIndex]
-
+       
         while (stack.length > 0)
         {
             const item = stack.pop();
             const bone = this.gltf.nodes[item[0]]; //Get node info for bone
             const parentIndex = item[1];
-
-            // if (n.isJoint != true) continue; //Check preprocessing to make sure its actually a used node.
 
             bones.push({
                 boneNum: skin.joints.indexOf(item[0]),

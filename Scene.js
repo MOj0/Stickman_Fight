@@ -22,4 +22,16 @@ export class Scene
             nodes: this.nodes.map(node => node.clone()),
         });
     }
+
+    getNodeByName(name)
+    {
+        for (const node of this.nodes)
+        {
+            if (node.name !== undefined && node.name == name)
+            {
+                return node;
+            }
+        }
+        return null;
+    }
 }

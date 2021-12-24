@@ -20,4 +20,16 @@ export class Player extends Node
         this.friction = 0.2;
         this.acceleration = 20;
     }
+
+    getAnimation()
+    {
+        for(const animation of this.animations)
+        {
+            if(animation.name == this.currAnimation)
+            {
+                return animation; 
+            }
+        }
+        return null;
+    }
 }

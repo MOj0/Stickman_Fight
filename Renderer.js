@@ -230,25 +230,23 @@ export class Renderer
 
         // ANIMATIONS
         // Gets the bone positions for the current frame of animation
-        const animation = player.animations[player.currAnimation];
+        const animation = player.getAnimation();
         const boneMatrices = player.armature.getBoneMatrices(animation, this.curFrame, this.curLerp);
 
-        // // Use this to stop the animation
-        // const identity = [
-        //     1., 0., 0., 0.,
-        //     0., 1., 0., 0.,
-        //     0., 0., 1., 0.,
-        //     0., 0., 0., 1.
-        // ];
-        // const nBones = boneMatrices.length / 16;
-        // let identityBones = [];
-        // for (let i = 0; i < nBones; i++)
-        // {
-        //     identityBones[i] = identity;
-        // }
-        // identityBones = new Float32Array([].concat(...identityBones));
+        const identity = [
+            1., 0., 0., 0.,
+            0., 1., 0., 0.,
+            0., 0., 1., 0.,
+            0., 0., 0., 1.
+        ];
+        const nBones = boneMatrices.length / 16; // Every bone is 4x4 matrix
+        let identityBones = []; // NOTE: Send this to the shader to stop animation
+        for (let i = 0; i < nBones; i++)
+        {
+            identityBones[i] = identity;
+        }
+        identityBones = new Float32Array([].concat(...identityBones));
 
-        // console.log(boneMatrices);
         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
 
         const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);

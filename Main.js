@@ -7,8 +7,6 @@ import { GLTFLoader } from './GLTFLoader.js';
 import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
-import { PerspectiveCamera } from './PerspectiveCamera.js';
-import { OrthographicCamera } from './OrthographicCamera.js';
 
 document.addEventListener("DOMContentLoaded", () =>
 {
@@ -30,13 +28,13 @@ class App extends Engine
 
         const floorModel = this.createModel(FloorModel);
         const greenTexture = Engine.createTexture(gl, {
-            // options object
             data: new Uint8Array([0, 255, 0, 255]),
             width: 1,
             height: 1
         });
 
         this.floor = new Node({
+            name: "Floor",
             model: floorModel,
             texture: greenTexture
         });
@@ -44,37 +42,22 @@ class App extends Engine
 
         this.loader = new GLTFLoader();
 
-        // await this.loader.load("./assets/models/model_blender/model_blender.gltf");
         await this.loader.load("./assets/models/stickman/stickman.gltf");
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene.addNode(this.floor);
 
-        this.player = this.getNodeByName(this.scene.nodes, "Armature");
+        this.player = this.scene.getNodeByName("Armature");
         this.camera = new Camera();
-        // TODO: Game looks 2D, use one these cameras???
-        // this.camera = new PerspectiveCamera();
-        // this.camera = new OrthographicCamera();
         this.player.addChild(this.camera);
         
-        // At this point all nodes are loaded
+        // All nodes are loaded
         console.log("Nodes in the scene", this.scene.nodes);
 
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
     }
 
-    getNodeByName(nodes, name)
-    {
-        for (const node of nodes)
-        {
-            if (node.name && node.name == name)
-            {
-                return node;
-            }
-        }
-        return null;
-    }
 
     update()
     {

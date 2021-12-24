@@ -4,7 +4,7 @@ import { mat4, vec3 } from './lib/gl-matrix-module.js';
 
 export class Camera extends Node
 {
-    constructor(options)
+    constructor(options = {name : "Camera"})
     {
         super(options);
         Utils.init(this, this.constructor.defaults, options);
@@ -54,16 +54,31 @@ export class Camera extends Node
         }
 
         const moving = this.keys['KeyW'] || this.keys['KeyS']|| this.keys['KeyA']|| this.keys['KeyD'];
-        player.currAnimation = moving ? 4 : 1;
+        player.currAnimation = moving ? "Run" : "Idle";
+
+        // Override the animation if player is attacking
+        if(this.keys["ArrowLeft"])
+        {
+            player.currAnimation = "Punch_L";
+        }
+        if(this.keys["ArrowRight"])
+        {
+            player.currAnimation = "Punch_R";
+        }
+        if(this.keys["ArrowUp"])
+        {
+            player.currAnimation = "Kick_L";
+        }
+        if(this.keys["ArrowDown"])
+        {
+            player.currAnimation = "Kick_R";
+        }
 
         // 2: update velocity
         vec3.scaleAndAdd(player.velocity, player.velocity, acc, dt * player.acceleration);
 
         // 3: if no movement, apply friction
-        if (!this.keys['KeyW'] &&
-            !this.keys['KeyS'] &&
-            !this.keys['KeyD'] &&
-            !this.keys['KeyA'])
+        if (!moving)
         {
             vec3.scale(player.velocity, player.velocity, 1 - player.friction);
         }
@@ -79,7 +94,7 @@ export class Camera extends Node
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
 
         // Update the final transform
-        // FIXME: Doesn't work 100% right!
+        // FIXME: Camera can move up more than 90 deg!
         const p = player.transform;
         mat4.identity(p);
         mat4.translate(p, p, player.translation);
