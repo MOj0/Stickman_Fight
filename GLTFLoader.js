@@ -348,7 +348,6 @@ export class GLTFLoader
             options.armature = armature;
             options.animations = animations;
             options.currAnimation = "Idle"; // Default animation
-            // options.currAnimation = "Walk_blocking"; // character
         }
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
@@ -395,12 +394,6 @@ export class GLTFLoader
 
         const rootBoneIndex = skin.joints[0]; // Root is always first ?
         stack.push([rootBoneIndex, null]); // [boneIndex, parentIndex]
-
-        // // character
-        // const hatBone = skin.joints[0];
-        // stack.push([hatBone, null]);
-        // const rootBoneIndex = skin.joints[1];
-        // stack.push([rootBoneIndex, null]);
 
         while (stack.length > 0)
         {

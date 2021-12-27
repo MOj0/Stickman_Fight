@@ -7,6 +7,7 @@ import { GLTFLoader } from './GLTFLoader.js';
 import { Renderer } from './Renderer.js';
 import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
+import { PerspectiveCamera } from './PerspectiveCamera.js';
 
 document.addEventListener("DOMContentLoaded", () =>
 {
@@ -43,14 +44,13 @@ class App extends Engine
         this.loader = new GLTFLoader();
 
         await this.loader.load("./assets/models/stickman/stickman.gltf");
-        // await this.loader.load("./assets/models/character/character.gltf");
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        this.scene.addNode(this.floor);
-
         this.player = this.scene.getNodeByName("Armature");
-        this.camera = new Camera();
-        this.player.addChild(this.camera);
+        this.camera = new PerspectiveCamera();
+        
+        this.scene.addNode(this.floor);
+        this.scene.addNode(this.camera);
         
         // All nodes are loaded
         console.log("Nodes in the scene", this.scene.nodes);
@@ -69,7 +69,7 @@ class App extends Engine
 
         if (this.camera)
         {
-            this.camera.update(dt);
+            this.camera.update(dt, this.player);
         }
     }
 
@@ -80,7 +80,7 @@ class App extends Engine
     {
         if (this.renderer && this.camera)
         {
-            this.renderer.render(this.scene, this.camera, sinceStart);
+            this.renderer.render(this.scene, this.player, this.camera, sinceStart);
         }
     }
 

@@ -194,7 +194,7 @@ export class Renderer
         }
     }
 
-    render(scene, camera, sinceStart)
+    render(scene, player, camera, sinceStart)
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
@@ -219,12 +219,17 @@ export class Renderer
         gl.uniform1i(program.uniforms.uTexture, 0);
 
         const cameraMatrix = camera.getGlobalTransform();
-        mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
+        const playerMatrix = player.getGlobalTransform();
 
-        /** @type {Player} */
-        const player = camera.parent;
+        // Set camera position to that of the player
+        cameraMatrix[12] = playerMatrix[12];
+        cameraMatrix[13] = playerMatrix[13];
+        cameraMatrix[14] = playerMatrix[14];
+        // Translate Z back for viewDistance, that way it always follows the player
+        mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
+        
         const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-        const playerPosition = [player.transform[12], player.transform[13], player.transform[14]];
+        const playerPosition = [playerMatrix[12], playerMatrix[13], playerMatrix[14]];
         const up = [0, 1, 0];
         const viewMatrix = mat4.lookAt(mat4.create(), cameraPosition, playerPosition, up); // look at the player
 
@@ -232,7 +237,6 @@ export class Renderer
         // Gets the bone positions for the current frame of animation
         const animation = player.getAnimation();
         const boneMatrices = player.armature.getBoneMatrices(animation, this.curFrame, this.curLerp);
-
         const identity = [
             1., 0., 0., 0.,
             0., 1., 0., 0.,
@@ -286,6 +290,10 @@ export class Renderer
 
         for (const child of node.children)
         {
+            if(child.isJoint || (child.name && child.name == "Camera"))
+            {
+                continue;
+            }
             this.renderNode(child, mvpMatrix);
         }
     }

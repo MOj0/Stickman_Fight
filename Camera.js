@@ -22,30 +22,13 @@ export class Camera extends Node
         this.halfpi = Math.PI / 2 - 0.01;
     }
 
-    // update(dt)
-    // {
-    //     const c = this;
-    //     const player = this.parent;
-
-    //     // c.rotation[1] = player.rotation[1] + Math.PI;
-
-    //     // player.rotation[1] = c.rotation[1];
-
-    //     // Update camera rotation
-    //     mat4.identity(c.transform);
-    //     mat4.rotateX(c.transform, c.transform, c.rotation[0]);
-    // }
-
-    update(dt)
+    update(dt, player)
     {
-        // TODO: Point the player away from camera (rotateY?)
         const c = this;
-        const player = this.parent;
 
-        // player.rotation[1] = c.rotation[1]; // ??
-
-        const forward = vec3.set(vec3.create(), -Math.sin(player.rotation[1]), 0, -Math.cos(player.rotation[1]));
-        const right = vec3.set(vec3.create(), Math.cos(player.rotation[1]), 0, -Math.sin(player.rotation[1]));
+        // Note: the formulas are changed, because the player is rotated 180 deg
+        const forward = vec3.set(vec3.create(), Math.sin(player.rotation[1]), 0, Math.cos(player.rotation[1]));
+        const right = vec3.set(vec3.create(), -Math.cos(player.rotation[1]), 0, Math.sin(player.rotation[1]));
 
         // 1: add movement acceleration
         const acc = vec3.create();
@@ -66,13 +49,13 @@ export class Camera extends Node
             vec3.sub(acc, acc, right);
         }
 
-        const moving = this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'];
+        const isMoving = this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'];
 
         // 2: update velocity
         vec3.scaleAndAdd(player.velocity, player.velocity, acc, dt * player.acceleration);
 
         // 3: if no movement, apply friction
-        if (!moving)
+        if (!isMoving)
         {
             vec3.scale(player.velocity, player.velocity, 1 - player.friction);
         }
@@ -92,15 +75,14 @@ export class Camera extends Node
         mat4.identity(t);
         mat4.translate(t, t, player.translation);
         mat4.rotateY(t, t, player.rotation[1]);
-        // player.updateTransform(); // How about this??
 
-        // Update camera rotation
+        // Update camera transform
         mat4.identity(c.transform);
+        mat4.rotateY(c.transform, c.transform, player.rotation[1] + Math.PI);
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
         // Animations
-        player.currAnimation = moving ? "Run" : "Idle";
-        // player.currAnimation = "Walk_blocking"; // character
+        player.currAnimation = isMoving ? "Run" : "Idle";
 
         // Override the animation if player is attacking
         if (this.keys["ArrowLeft"])
