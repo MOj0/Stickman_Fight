@@ -25,7 +25,7 @@ export class Camera extends Node
     update(dt, player)
     {
         const c = this;
-
+      
         // Note: the formulas are changed, because the player is rotated 180 deg
         const forward = vec3.set(vec3.create(), Math.sin(player.rotation[1]), 0, Math.cos(player.rotation[1]));
         const right = vec3.set(vec3.create(), -Math.cos(player.rotation[1]), 0, Math.sin(player.rotation[1]));
