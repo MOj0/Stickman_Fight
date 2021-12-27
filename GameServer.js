@@ -60,7 +60,7 @@ function updatePlayer(socketID, x, y, life) {
                 console.log("Reseting timeouts for: " + players[i].player);
                 players[i].timeout = true;
                 players[i].xpTimeout = true;
-                players[i].lastLaser = "";
+                players[i].lastHit = "";
             }
         }
     }, 4000);
@@ -100,7 +100,7 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.xpTimeout = true; // Enable only one XP add to run at a time
 }
 
-function Laser(player, x, y, targetX, targetY, weaponType) {
+function Hit(player, x, y, targetX, targetY, weaponType) {
     this.player = player;
     this.x = x;
     this.y = y;
@@ -209,15 +209,15 @@ io.sockets.on('connection',
                     player.x = data.x;
                     player.y = data.y;
                     player.life = data.life;
-                    player.lastLaser = data.lastLaser;
+                    player.lastHit = data.lastHit;
                     player.inventory = data.inventory;
 
                     if (player.life <= 0) {
-                        // console.log("Last laser: " + player.lastlaser);
+                        // console.log("Last hit: " + player.lasthit);
 
-                        // Loop through all players and assign XP(based on lastlaser)
+                        // Loop through all players and assign XP(based on lasthit)
                         for (var j = 0; j < players.length; j++) {
-                            if (players[j].player === player.lastLaser) {
+                            if (players[j].player === player.lastHit) {
                                 // console.log("Give 100XP to: "+players[j].player);
 
                                 if (player.xpTimeout) {
@@ -245,11 +245,11 @@ io.sockets.on('connection',
 
         });
 
-        socket.on('shoot', function (playerLaser) {
-            var laser = new Laser(playerLaser.player, playerLaser.x,
-                playerLaser.y, playerLaser.targetX,
-                playerLaser.targetY, playerLaser.weaponType);
-            hitsAll.push(laser);
+        socket.on('shoot', function (playerHit) {
+            var hit = new Hit(playerHit.player, playerHit.x,
+                playerHit.y, playerHit.targetX,
+                playerHit.targetY, playerHit.weaponType);
+            hitsAll.push(hit);
             // console.log(hitsAll);
         });
 

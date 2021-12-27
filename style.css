@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
     margin: 0;
     padding: 0;
 }
@@ -13,7 +14,7 @@ body, html {
     overflow: hidden;
 }
 
-.fullscreen > * {
+.fullscreen>* {
     width: 100%;
     height: 100%;
 }
@@ -36,4 +37,226 @@ a.back {
 
 a.back:hover {
     background: #ddd;
+}
+
+
+/* Game GUI */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    height: 6.5%;
+    width: 50%;
+    /*background-color: rgba(220, 220, 220, 0.1);*/
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Old versions of Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+}
+
+#inventoryOutline {
+    position: absolute;
+    bottom: -75%;
+    left: 8%;
+    height: 80%;
+    width: 35%;
+    background-color: rgba(0, 0, 0, 0);
+    /*border:2px solid #000;*/
+
+    /*transform: skew(45deg);
+    -webkit-transform: skew(45deg);*/
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.inventoryItem {
+    display: inline-block;
+    position: relative;
+    bottom: 0;
+    left: -7.5%;
+    height: 100%;
+    width: 20%;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid #000;
+    border-radius: 15%;
+    font-size: 1vw;
+
+    /*transform: skew(-45deg);
+    -webkit-transform: skew(-45deg);*/
+}
+
+.activeItem {
+    border: 1px solid #61697b;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.itemCounter {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+}
+
+.inventoryItem img {
+    position: absolute;
+    width: 60%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+}
+
+#wTypeOutline {
+    position: absolute;
+    bottom: -50%;
+    right: 0;
+    height: 95%;
+    width: 38%;
+    background-color: rgba(0, 0, 0, 0);
+    /*border:2px solid #000;*/
+
+    /*transform: skew(45deg);
+    -webkit-transform: skew(45deg);*/
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+#healthBarOutline {
+    position: absolute;
+    bottom: 0;
+    left: 4.5%;
+    height: 50%;
+    width: 40%;
+    background-color: rgba(0, 0, 0, 0);
+    border: 2px solid #000;
+
+    transform: skew(-45deg);
+    -webkit-transform: skew(-45deg);
+}
+
+#healthBar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    width: 40%;
+    background-color: rgba(0, 255, 10, 0.8);
+    /*border:1px solid #000;*/
+    /*background:yellow;*/
+    /*transform: skew(-45deg);
+    -webkit-transform: skew(-45deg);*/
+}
+
+#xpContainer {
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 30%;
+    height: 400%;
+    /*background-color: rgba(0, 220, 220, 0.1);*/
+}
+
+#xp {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 5vw;
+    max-width: 64px;
+    height: 5vw;
+    max-height: 64px;
+    border: 1px solid #000;
+    background: rgba(220, 220, 220, 0.1);
+    /*  margin:3px 0 0 30px;*/
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    color: black;
+
+}
+
+.xpIndicator {
+    content: "";
+    background: red;
+    position: absolute;
+
+}
+
+#xp0 {
+    bottom: 0;
+    left: 0;
+    height: 0%;
+    width: 5px;
+}
+
+#xp1 {
+    top: 0;
+    left: 0;
+    height: 5px;
+    width: 0%;
+}
+
+#xp2 {
+    top: 0;
+    right: 0;
+    height: 0%;
+    width: 5px;
+}
+
+#xp3 {
+    bottom: 0;
+    right: 0;
+    height: 5px;
+    width: 0%;
+}
+
+#xp p {
+    margin: 2% 0 0 0;
+    font-weight: bold;
+    font-size: 3.2vw;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.level {
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 50%;
+    height: 50%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 3.1vw;
+
+}
+
+#overlay {
+    display: none;
+    position: absolute;
+    top: 500%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 6vw;
+}
+
+@media screen and (min-width: 1280px) {
+    .level {
+        font-size: 36px;
+    }
+
+    .inventoryItem {
+        font-size: 12px;
+    }
 }

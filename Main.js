@@ -19,15 +19,21 @@ let mPlayer;
 let ipAddress;
 let hits = [];
 let hitsEnemy = [];
+let updateGUI = true;
 let otherPlayers = [];
 let otherPlayerNodes = [];
 const HIT_RANGE = 0.1;
+
+function mapNumber(num, in_min, in_max, out_min, out_max){
+    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 document.addEventListener("DOMContentLoaded", () =>
 {
     ipAddress = window.location.host;
     console.log("Server IP ", ipAddress)
     socket = io.connect(ipAddress + '/');
+    $("#overlay").hide();
 
     // On 'start' message, server generates the player object and returns it as a response
     let uid = (Math.random() + 1).toString(36).substring(2);
@@ -62,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () =>
         tmp.translation = [mPlayer.x, 0, mPlayer.y];
         tmp.updateTransform();
         console.log("Position from server: "+x+" - "+y);
+        $("#overlay").hide()
     });
     socket.on('broadcastRemovePlayer', function(playerName){
         // Remove any players(nodes) that left the game
@@ -112,7 +119,44 @@ document.addEventListener("DOMContentLoaded", () =>
             }
         }
         
+        if (mPlayer && updateGUI) {
+            mPlayer.xpForNextLevel = 200 + 75 * (mPlayer.level-1);
+            var totalXP = 37.5*(mPlayer.level * mPlayer.level) + 87.5*mPlayer.level - 125;
+            // Calculates percente to get to new level
+            let percent = 100 / mPlayer.xpForNextLevel * (mPlayer.xp-totalXP);
+            if(percent <= 25){
+                $("#xp0").css("height", mapNumber(percent, 0, 25, 0, 100) + "%");
+                $("#xp1").css("width","0%");
+                $("#xp2").css("height","0%");
+                $("#xp3").css("width","0%");
+            } else if (percent <= 50) {
+                $("#xp0").css("height","100%");
+                $("#xp1").css("width", mapNumber(percent, 26, 50, 0, 100) + "%");
+                $("#xp2").css("height","0%");
+                $("#xp3").css("width","0%");
+            } else if (percent <= 75) {
+                $("#xp0").css("height","100%");
+                $("#xp1").css("width", "100%");
+                $("#xp2").css("height", mapNumber(percent, 51, 75, 0, 100) + "%");
+                $("#xp3").css("width","0%");
+            } else if (percent <= 100) {
+                $("#xp0").css("height","100%");
+                $("#xp1").css("width","100%");
+                $("#xp2").css("height","100%");
+                $("#xp3").css("width", mapNumber(percent, 76, 100, 0, 100) + "%");
+            }
+    
+            // Calculates percent of remaining life
+            let lifePercent = (mPlayer.life / mPlayer.maxLife) * 100+ "%";
+
+            if (mPlayer.life <= 0) $("#overlay").show();
+            //console.log(lifePercent);
+            document.getElementById("healthBar").style.width = lifePercent;
+            document.getElementById("level").innerHTML = mPlayer.level;
+            updateGUI = false;
+        }
     });
+
 
 });
 
@@ -209,6 +253,7 @@ class App extends Engine
                 }
             }
             mPlayer.health(hitsEnemy);
+            updateGUI = true;
             // Enemy hits move/remove
             for (var i = 0; i < hitsEnemy.length; i++) {
                 hitsEnemy[i].move();

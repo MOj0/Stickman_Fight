@@ -16,7 +16,7 @@
         }
     </style> -->
 
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
     <script type="text/javascript" src="../../lib/dat.gui.min.js"></script>
@@ -29,6 +29,32 @@
     <div class="fullscreen">
         <canvas>
         </canvas>
+    </div>
+    <div id="hud">
+        <div id="healthBarOutline">
+            <div id="healthBar"></div>
+        </div>
+
+        <div id="overlay">Wasted</div>
+
+
+        <!--<div id="wTypeOutline">
+          <div id="item0" class="inventoryItem activeItem"><div class="itemCounter" id="itemCount0">10</div><img src="client/resources/laser0.png">
+        </div><div id="item2" class="inventoryItem"><div class="itemCounter" id="itemCount2">10</div><img src="client/resources/laser1.png">
+      </div><div id="item3" class="inventoryItem"><div class="itemCounter" id="itemCount3">10</div><img src="client/resources/laser2.png">
+          </div>
+        </div>-->
+
+        <div id="xpContainer">
+            <div id="xp">
+                <!-- Outline showing XP-->
+                <div class="xpIndicator" id="xp0"></div>
+                <div class="xpIndicator" id="xp1"></div>
+                <div class="xpIndicator" id="xp2"></div>
+                <div class="xpIndicator" id="xp3"></div>
+            </div>
+            <div id="level" class="level">0</div>
+        </div>
     </div>
 </body>
 
