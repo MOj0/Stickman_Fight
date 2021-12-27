@@ -4,7 +4,7 @@ import { mat4, vec3 } from './lib/gl-matrix-module.js';
 
 export class Camera extends Node
 {
-    constructor(options = {name : "Camera"})
+    constructor(options)
     {
         super(options);
         Utils.init(this, this.constructor.defaults, options);
@@ -19,20 +19,33 @@ export class Camera extends Node
         this.keys = {};
 
         this.twopi = Math.PI * 2;
-        this.halfpi = Math.PI / 2 - 0.01; // Subtract a small decimal to get rid of edge case
+        this.halfpi = Math.PI / 2 - 0.01;
     }
+
+    // update(dt)
+    // {
+    //     const c = this;
+    //     const player = this.parent;
+
+    //     // c.rotation[1] = player.rotation[1] + Math.PI;
+
+    //     // player.rotation[1] = c.rotation[1];
+
+    //     // Update camera rotation
+    //     mat4.identity(c.transform);
+    //     mat4.rotateX(c.transform, c.transform, c.rotation[0]);
+    // }
 
     update(dt)
     {
+        // TODO: Point the player away from camera (rotateY?)
         const c = this;
         const player = this.parent;
 
-        player.rotation[1] = c.rotation[1];
+        // player.rotation[1] = c.rotation[1]; // ??
 
-        const forward = vec3.set(vec3.create(),
-            -Math.sin(player.rotation[1]), 0, -Math.cos(player.rotation[1]));
-        const right = vec3.set(vec3.create(),
-            Math.cos(player.rotation[1]), 0, -Math.sin(player.rotation[1]));
+        const forward = vec3.set(vec3.create(), -Math.sin(player.rotation[1]), 0, -Math.cos(player.rotation[1]));
+        const right = vec3.set(vec3.create(), Math.cos(player.rotation[1]), 0, -Math.sin(player.rotation[1]));
 
         // 1: add movement acceleration
         const acc = vec3.create();
@@ -53,26 +66,7 @@ export class Camera extends Node
             vec3.sub(acc, acc, right);
         }
 
-        const moving = this.keys['KeyW'] || this.keys['KeyS']|| this.keys['KeyA']|| this.keys['KeyD'];
-        player.currAnimation = moving ? "Run" : "Idle";
-
-        // Override the animation if player is attacking
-        if(this.keys["ArrowLeft"])
-        {
-            player.currAnimation = "Punch_L";
-        }
-        if(this.keys["ArrowRight"])
-        {
-            player.currAnimation = "Punch_R";
-        }
-        if(this.keys["ArrowUp"])
-        {
-            player.currAnimation = "Kick_L";
-        }
-        if(this.keys["ArrowDown"])
-        {
-            player.currAnimation = "Kick_R";
-        }
+        const moving = this.keys['KeyW'] || this.keys['KeyS'] || this.keys['KeyA'] || this.keys['KeyD'];
 
         // 2: update velocity
         vec3.scaleAndAdd(player.velocity, player.velocity, acc, dt * player.acceleration);
@@ -94,18 +88,37 @@ export class Camera extends Node
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
 
         // Update the final transform
-        // FIXME: Camera can move up more than 90 deg!
-        const p = player.transform;
-        mat4.identity(p);
-        mat4.translate(p, p, player.translation);
-        mat4.rotateY(p, p, player.rotation[1]); // Update with camera rotation so its the same
-        mat4.rotateX(p, p, player.rotation[0]);
-
+        const t = player.transform;
+        mat4.identity(t);
+        mat4.translate(t, t, player.translation);
+        mat4.rotateY(t, t, player.rotation[1]);
         // player.updateTransform(); // How about this??
 
         // Update camera rotation
         mat4.identity(c.transform);
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
+
+        // Animations
+        player.currAnimation = moving ? "Run" : "Idle";
+        // player.currAnimation = "Walk_blocking"; // character
+
+        // Override the animation if player is attacking
+        if (this.keys["ArrowLeft"])
+        {
+            player.currAnimation = "Punch_L";
+        }
+        if (this.keys["ArrowRight"])
+        {
+            player.currAnimation = "Punch_R";
+        }
+        if (this.keys["ArrowUp"])
+        {
+            player.currAnimation = "Kick_L";
+        }
+        if (this.keys["ArrowDown"])
+        {
+            player.currAnimation = "Kick_R";
+        }
     }
 
     updateProjection()
@@ -167,6 +180,7 @@ export class Camera extends Node
 
 
 Camera.defaults = {
+    name: "Camera",
     aspect: 1,
     fov: 1.5,
     near: 0.01,

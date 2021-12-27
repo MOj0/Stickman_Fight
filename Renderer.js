@@ -248,6 +248,7 @@ export class Renderer
         identityBones = new Float32Array([].concat(...identityBones));
 
         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+        // gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, identityBones); // Send the bone positions to the shader
 
         const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
         for (const node of scene.nodes)

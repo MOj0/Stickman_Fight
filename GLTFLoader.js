@@ -12,8 +12,8 @@ import { Node } from "./Node.js";
 import { Player } from "./Player.js";
 import { Armature } from "./Armature.js";
 
-// This class loads all GLTF resources and instantiates
-// the corresponding classes. Resources are loaded sequentially.
+// This class loads all GLTF resources and instantiates the corresponding classes.
+// Resources are loaded sequentially.
 
 export class GLTFLoader
 {
@@ -348,6 +348,7 @@ export class GLTFLoader
             options.armature = armature;
             options.animations = animations;
             options.currAnimation = "Idle"; // Default animation
+            // options.currAnimation = "Walk_blocking"; // character
         }
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
@@ -388,13 +389,19 @@ export class GLTFLoader
             console.log("Erorr: no skins in the gltf found.");
             return;
         }
-        
+
         const bones = [];
         const stack = [];
 
         const rootBoneIndex = skin.joints[0]; // Root is always first ?
         stack.push([rootBoneIndex, null]); // [boneIndex, parentIndex]
-       
+
+        // // character
+        // const hatBone = skin.joints[0];
+        // stack.push([hatBone, null]);
+        // const rootBoneIndex = skin.joints[1];
+        // stack.push([rootBoneIndex, null]);
+
         while (stack.length > 0)
         {
             const item = stack.pop();
@@ -469,7 +476,7 @@ export class GLTFLoader
             animation.nKeyframes = times.count; // Set number of keyframes
 
             let joint;
-            
+
             if (!animation[nodePtr.name])
                 joint = animation[nodePtr.name] = {};
             else

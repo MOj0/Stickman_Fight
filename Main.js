@@ -43,6 +43,7 @@ class App extends Engine
         this.loader = new GLTFLoader();
 
         await this.loader.load("./assets/models/stickman/stickman.gltf");
+        // await this.loader.load("./assets/models/character/character.gltf");
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene.addNode(this.floor);
