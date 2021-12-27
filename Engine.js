@@ -4,11 +4,14 @@ export class Engine
     {
         this._update = this._update.bind(this);
 
+        // canvas.style.position = "fixed";
+        // canvas.width = window.innerWidth;
+        // canvas.height = window.innerHeight;
         this.canvas = canvas;
+
         this._initGL(glOptions);
         this.start();
 
-        // this._update is a callback to be executed BEFORE repaint
         requestAnimationFrame(this._update);
     }
 
@@ -30,11 +33,14 @@ export class Engine
         }
     }
 
-    _update()
+    /**
+     * @param {DOMHighResTimeStamp} time Current time (based on the number of milliseconds since document load)
+     */
+    _update(time)
     {
         this._resize();
         this.update();
-        this.render();
+        this.render(time);
         requestAnimationFrame(this._update);
     }
 
