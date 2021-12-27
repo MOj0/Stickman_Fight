@@ -1,24 +1,11 @@
-export class Ai{
+export class OtherPlayer{
   constructor(id, player, x, y, life){
     this.id = id;
     this.player = player;
     this.x = x;
     this.y = y;
-    this.r = 100;
+    this.r = 1;
     this.life = life;
-
-    // this.image = playerImg[parseInt(this.player.split(':')[0])]; // Gets team ID from player name
-  }
-
-  show() {
-    if (this.life > 0){ // Resets image
-      this.image = playerImg[parseInt(this.player.split(':')[0])]; // Gets team ID from player name
-      image(this.image, this.x-50, this.y-51, 100, 100);
-    }
-    //ellipse(this.x, this.y, this.r, this.r);
-
-    fill(0, 0, 0); textAlign(CENTER); textSize(10);
-    text(this.player, this.x, this.y+80);
   }
 
   health(){
