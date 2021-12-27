@@ -1,8 +1,13 @@
-import { Engine } from "./Engine.js";
-import { mat4, vec3 } from './lib/gl-matrix-module.js';
-// import { GUI } from './lib/dat.gui.module.js';
-import { Node } from "./Node.js";
+"use strict";
+
+import { mat4 } from './lib/gl-matrix-module.js';
+import { Engine } from './Engine.js';
+import { Camera } from './Camera.js';
+import { GLTFLoader } from './GLTFLoader.js';
+import { Renderer } from './Renderer.js';
+import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
+
 import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
 import { Camera } from "./Camera.js";
@@ -55,6 +60,9 @@ document.addEventListener("DOMContentLoaded", () =>
     });
     
     const canvas = document.querySelector("canvas");
+
+    new App(canvas);
+
     const app = new App(canvas);
 
     socket.on('updatePosition', function(x, y){
@@ -124,8 +132,8 @@ document.addEventListener("DOMContentLoaded", () =>
     // gui.add(app.cube, 'maxSpeed', 0, 10);
     // gui.add(app.cube, 'friction', 0.05, 0.75);
     // gui.add(app.cube, 'acceleration', 1, 100);
-});
 
+});
 
 class App extends Engine
 {
@@ -133,6 +141,7 @@ class App extends Engine
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
+
 
         this.loader = new GLTFLoader();
         // await this.loader.load("./assets/models/simpleStickman/simpleStickman.gltf"); // also sets defaultScene reference
@@ -146,27 +155,29 @@ class App extends Engine
         let animations = this.loader.parseAnimation(1);
         console.log("Loaded animation: ", animations);
 
+
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
         document.addEventListener('mousedown', this.mousedownHandler);
 
-        this.time = Date.now();
-        this.startTime = this.time;
-        this.viewDistance = 3;
-
         const floorModel = this.createModel(FloorModel);
         const greenTexture = Engine.createTexture(gl, {
-            // options object
             data: new Uint8Array([0, 255, 0, 255]),
             width: 1,
             height: 1
         });
 
         this.floor = new Node({
-            model:  floorModel,
-            texture:  greenTexture
+            name: "Floor",
+            model: floorModel,
+            texture: greenTexture
         });
+
+        mat4.fromScaling(this.floor.transform, [30, 1, 30]);
+
+        this.loader = new GLTFLoader();
+
         mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
         const cubeModel = this.createModel(CubeModel);
@@ -187,10 +198,16 @@ class App extends Engine
         // mat4.fromTranslation(this.player.transform, [0, 1, -5]); // doesn't do anything?
         // this.player.updateTransform();
 
-        this.scene = await this.loader.loadScene(this.loader.defaultScene);
-        // this.scene = new Scene(); // create Scene manually
 
+        await this.loader.load("./assets/models/stickman/stickman.gltf");
+
+        this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene.addNode(this.floor);
+
+
+        this.player = this.scene.getNodeByName("Armature");
+        this.camera = new Camera();
+
         this.scene.addNode(this.cube);
 
         console.log(this.scene);
@@ -201,16 +218,23 @@ class App extends Engine
         
         this.camera = new Camera(); // create Camera manually
         this.player.addChild(this.camera);
+        
+        // All nodes are loaded
+        console.log("Nodes in the scene", this.scene.nodes);
 
-        this.renderer = new Renderer(gl);
+        this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);
     }
+
 
     update()
     {
         this.time = Date.now();
         const dt = (this.time - this.startTime) * 0.001;
         this.startTime = this.time;
+
+        this.sinceStart = (this.sinceStart + dt) % 100;
+
         if (mPlayer !== undefined && this.player !== undefined) {
             mPlayer.x = this.player.translation[0];
             mPlayer.y = this.player.translation[2];
@@ -240,49 +264,39 @@ class App extends Engine
             socket.emit('update', mPlayer, lasers); // Send update message to server
         }
 
+
         if (this.camera)
         {
             this.camera.update(dt);
         }
-
-        if (this.physics)
-        {
-            this.physics.update(dt);
-        }
     }
 
-    render()
+    /**
+     * @param {DOMHighResTimeStamp} sinceStart Current time (based on the number of milliseconds since document load)
+     */
+    render(sinceStart)
     {
         if (this.renderer && this.camera)
         {
-            this.renderer.render(this.scene, this.camera);
+            this.renderer.render(this.scene, this.camera, sinceStart);
         }
     }
 
-    resize()
+    pointerlockchangeHandler()
     {
-        if (this.camera)
+        if (document.pointerLockElement === this.canvas && this.camera)
         {
-            const w = this.canvas.clientWidth;
-            const h = this.canvas.clientHeight;
-            const aspect = w / h;
-            const FOVy = Math.PI / 2;
-            const near = 0.1;
-            const far = 100;
-
-            mat4.perspective(this.camera.projection, FOVy, aspect, near, far);
+            this.camera.enable();
+        }
+        else
+        {
+            this.camera.disable();
         }
     }
 
-    getNodeByName(nodes, name)
+    mousedownHandler(e)
     {
-        for(const node of nodes)
-        {
-            if(node.name && node.name == name)
-            {
-                return node;
-            }
-        }
+        this.canvas.requestPointerLock();
     }
 
     removeNodeByName(nodes, name)
@@ -322,6 +336,7 @@ class App extends Engine
         return { vao, indices: numTriangles };
     }
 
+
     pointerlockchangeHandler()
     {
         if (document.pointerLockElement === this.canvas && this.camera)
@@ -344,4 +359,5 @@ class App extends Engine
             console.log("Right click...");
         }
     }
+
 }

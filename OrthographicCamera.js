@@ -19,7 +19,7 @@ export class OrthographicCamera extends Camera
 
     updateMatrix()
     {
-        mat4.ortho(this.matrix,
+        mat4.ortho(this.projection,
             this.left, this.right,
             this.bottom, this.top,
             this.near, this.far);
