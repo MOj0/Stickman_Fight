@@ -1,4 +1,4 @@
-import { Laser } from "./bullet.js";
+import { Hit } from "./Hit.js";
 
 export class MPlayer {
     constructor(player, x, y, life, maxLife, xp, level, spawn, inventory) {
@@ -20,15 +20,13 @@ export class MPlayer {
 
         this.weaponType = 0;
         this.itemType = 1;
-        //this.image = playerImg[0]; // Gets team ID from player name
-        // DEV
+       
         this.mouseX = 0;
         this.mouseY = 0;
         this.moveSpeed = 4;
 
-        this.lastLaser = "";
+        this.lastHit = "";
 
-        //
         this.diffX;
         this.diffY;
         this.angle;
@@ -36,108 +34,37 @@ export class MPlayer {
         this.i1;
     }
 
-    show() {
-        fill(0, 255, 0);
-        // ellipse(this.x, this.y, this.w, this.h);
-        if (this.life > 0) { // Resets image to image of life player
-            this.image = playerImg[parseInt(this.player.split(':')[0])];
-            image(this.image, this.x - 50, this.y - 51, 100, 100);
-        }
-        // image(this.image, this.x-50, this.y-51, 100, 100);
-
-        fill(100, 100, 100);
-        textAlign(CENTER);
-        textSize(12);
-        text(this.player, this.x, this.y + 80);
-
-
-    }
-
-    move(direction) {
+    shoot(socket, hits) {
         if (this.life > 0) {
-            if (direction === 6) { // Right
-                if (data[this.y][this.x + this.moveSpeed] == 1) {
-                    this.x = this.x + this.moveSpeed;
-
-                }
-            } else if (direction === 4) { // Left
-                if (data[this.y][this.x - this.moveSpeed] == 1) {
-                    this.x = this.x - this.moveSpeed;
-
-                }
-            }
-            if (direction === 8) { // Up
-                if (data[this.y - this.moveSpeed][this.x] == 1) {
-                    this.y = this.y - this.moveSpeed;
-
-                }
-            } else if (direction === 2) { // Down
-                if (data[this.y + this.moveSpeed][this.x] == 1) {
-                    this.y = this.y + this.moveSpeed;
-
-                }
-            }
-        }
-        //console.log(data[this.y][this.x]);
-    }
-
-    aim() {
-        this.diffX = mouseX + this.x - width / 2 - this.x;
-        this.diffY = mouseY + this.y - height / 2 - this.y;
-        this.angle = Math.atan2(this.diffY, this.diffX);
-
-        fill(0, 255, 0);
-        line(this.x, this.y, mouseX + this.x - width / 2, mouseY + this.y - height / 2);
-        ellipse(mouseX + this.x - width / 2, mouseY + this.y - height / 2, 5, 5);
-
-        var circle0 = {
-            x: mouseX + this.x - width / 2 - 20 * Math.cos(this.angle),
-            y: mouseY + this.y - height / 2 - 20 * Math.sin(this.angle),
-            r: 40
-        };
-
-        var circle1 = {
-            x: mouseX + this.x - width / 2 + 20 * Math.cos(this.angle),
-            y: mouseY + this.y - height / 2 + 20 * Math.sin(this.angle),
-            r: 40
-        };
-
-        var i = intersection(circle0, circle1); // Calculates two intersection point of circles
-        this.i0 = i[0];
-        this.i1 = i[1];
-    }
-
-    shoot(socket, lasers) {
-        if (this.life > 0) {
-            var thisLaser = new Laser(this.player, this.x, this.y, this.mouseX , this.mouseY, this.weaponType);
+            var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, this.weaponType);
 
             if (this.weaponType === 2) {
                 if (this.inventory[2] > 0) { // Don't shoot if inventory is empty
                     this.inventory[2] -= 1; // Remove one laser from inventory
-                    var leftLaser = new Laser(this.player, this.x, this.y, this.i0.x, this.i0.y, this.weaponType);
-                    var rightLaser = new Laser(this.player, this.x, this.y, this.i1.x, this.i1.y, this.weaponType);
-                    //laserSound.play();
-                    socket.emit('shoot', thisLaser);
-                    socket.emit('shoot', leftLaser);
-                    socket.emit('shoot', rightLaser);
-                    lasers.push(thisLaser);
-                    lasers.push(leftLaser);
-                    lasers.push(rightLaser);
+                    var leftHit = new Hit(this.player, this.x, this.y, this.i0.x, this.i0.y, this.weaponType);
+                    var rightHit = new Hit(this.player, this.x, this.y, this.i1.x, this.i1.y, this.weaponType);
+                    //hitsound.play();
+                    socket.emit('shoot', thisHit);
+                    socket.emit('shoot', leftHit);
+                    socket.emit('shoot', rightHit);
+                    hits.push(thisHit);
+                    hits.push(leftHit);
+                    hits.push(rightHit);
                 }
             } else if (this.weaponType === 0) { // Shoot only one laser
                 if (this.inventory[0] > 0) { // Don't shoot if inventory is empty
                     this.inventory[0] -= 1; // Remove one laser from inventory
-                    //laserSound.play();
-                    socket.emit('shoot', thisLaser);
-                    lasers.push(thisLaser);
+                    //hitsound.play();
+                    socket.emit('shoot', thisHit);
+                    hits.push(thisHit);
                 }
-            } else if (this.weaponType === 3) { // Explosive lasers
+            } else if (this.weaponType === 3) { // Explosive hits
                 if (this.inventory[3] > 0) { // Don't shoot if inventory is empty
                     this.inventory[3] -= 1; // Remove one explosive laser from inventory
-                    //laserSound.play();
-                    thisLaser.weaponType = 3;
-                    socket.emit('shoot', thisLaser);
-                    lasers.push(thisLaser);
+                    //hitsound.play();
+                    thisHit.weaponType = 3;
+                    socket.emit('shoot', thisHit);
+                    hits.push(thisHit);
                 }
             }
 
@@ -146,15 +73,15 @@ export class MPlayer {
     dist(x1, y1, x2, y2) {
         return  Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
-    health(lasersEnemy) {
-        for (var i = 0; i < lasersEnemy.length; i++) {
-            if (lasersEnemy[i].player !== this.player &&
-                this.dist(lasersEnemy[i].x, lasersEnemy[i].y, this.x, this.y) <= 3) { // Distance between laser and player
-                //console.log(lasersEnemy[i]);
-                this.lastLaser = lasersEnemy[i].player;
-                console.log("Got hit by: " + this.lastLaser);
-                this.life -= lasersEnemy[i].damage; // Damage taken
-                lasersEnemy.splice(i, 1); // Removes lasers that hit the player
+    health(hitsEnemy) {
+        for (var i = 0; i < hitsEnemy.length; i++) {
+            if (hitsEnemy[i].player !== this.player &&
+                this.dist(hitsEnemy[i].x, hitsEnemy[i].y, this.x, this.y) <= 3) { // Distance between laser and player
+                //console.log(hitsEnemy[i]);
+                this.lastHit = hitsEnemy[i].player;
+                console.log("Got hit by: " + this.lastHit);
+                this.life -= hitsEnemy[i].damage; // Damage taken
+                hitsEnemy.splice(i, 1); // Removes hits that hit the player
             }
         }
 
