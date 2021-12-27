@@ -17,7 +17,7 @@ export class Armature
             bone.localMatrix = mat4.create();
             bone.worldMatrix = mat4.create();
             bone.inverseBindpose = mat4.create();
-            bone.offsetMatrix = mat4.create();
+            bone.offsetMatrix = mat4.create(); // Final matrix to apply to the weighted vertices
         }
         this.setBindPose();
     }
@@ -85,9 +85,6 @@ export class Armature
                 scale1 = animation[bone.name].scale.samples[(keyframe + 1) % nKeyframes].v;
             }
 
-            // const worldMatrix = parentWorldMatrices[i] = mat4.create(); // Calculated world matrix for bone
-            const localMatrix = mat4.create(); // Local matrix
-            const offsetMatrix = mat4.create(); // Final matrix to apply to the weighted vertices
             const lquat = quat.create();
             const lvecTranslate = vec3.create();
             const lvecScale = vec3.create();
@@ -99,22 +96,22 @@ export class Armature
             // Lerp scale
             vec3.lerp(lvecScale, scale0, scale1, lerpVal);
 
-            mat4.fromRotationTranslationScale(localMatrix, lquat, lvecTranslate, lvecScale);
+            mat4.fromRotationTranslationScale(bone.localMatrix, lquat, lvecTranslate, lvecScale);
 
             // Use the bone hierarchy, important: all parents must be evaluated BEFORE their children
             if (bone.parent == null || bone.parent == -1)
             {
-                mat4.copy(bone.worldMatrix, localMatrix);
+                mat4.copy(bone.worldMatrix, bone.localMatrix);
             }
             else
             {
-                mat4.multiply(bone.worldMatrix, this.bones[bone.parent].worldMatrix, localMatrix);
+                mat4.multiply(bone.worldMatrix, this.bones[bone.parent].worldMatrix, bone.localMatrix);
             }
 
             // Get the offset matrix = worldMatrix * bone's inverse bindpose
-            mat4.multiply(offsetMatrix, bone.worldMatrix, bone.inverseBindpose);
+            mat4.multiply(bone.offsetMatrix, bone.worldMatrix, bone.inverseBindpose);
 
-            flat.push.apply(flat, offsetMatrix); // Apply also flattens the nested arrays
+            flat.push.apply(flat, bone.offsetMatrix); // Apply also flattens the nested arrays
         }
 
         return new Float32Array(flat);

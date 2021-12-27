@@ -15,6 +15,8 @@ export class Player extends Node
     {
         super(options);
 
+        this.rotation[1] = Math.PI; // Rotate player so he points in the opposite direction of the camera
+
         this.velocity = vec3.set(vec3.create(), 0, 0, 0);
         this.maxSpeed = 3;
         this.friction = 0.2;

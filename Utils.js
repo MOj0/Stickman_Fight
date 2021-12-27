@@ -2,8 +2,8 @@ export class Utils
 {
     static init(object, defaults, options)
     {
-        // NOTE: Not sure why this is necessary
-        // Convert dictionary to Json ..?
+        // // NOTE: Not sure why this is necessary
+        // // Convert dictionary to Json ..?
         // let defaulted = Utils.clone(defaults || {});
         // let filtered = Utils.clone(options || {});
         // for(let key in filtered)
