@@ -335,10 +335,11 @@ export class GLTFLoader
         {
             options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
+        let armature = null;
         if (isPlayerNode)
         {
             const skin = this.loadSkin(0); // Armature / Skeleton from gltf
-            const armature = new Armature(skin);
+            armature = new Armature(skin);
             const animations = [];
             for (const animIndex in this.gltf.animations)
             {
@@ -351,6 +352,10 @@ export class GLTFLoader
         }
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
+        if(isPlayerNode)
+        {
+            armature.setPlayerRef(node);
+        }
         this.cache.set(gltfSpec, node);
         return node;
     }

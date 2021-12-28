@@ -14,6 +14,7 @@ export class Armature
         this.animationCompleted = true;
         this.currentAnimation = null;
         this.animationStart = null; // Used to start the attack animations from keyframe 0
+        this.playerRef = null;
 
         this.animationNameMap = {
             Punch_L: 0,
@@ -63,6 +64,10 @@ export class Armature
         }
     }
 
+    setPlayerRef(player)
+    {
+        this.playerRef = player;
+    }
 
     // Returns bone matrices for the current frame
     getBoneMatrices(animation, sinceStart)
@@ -93,7 +98,7 @@ export class Armature
         }
 
         // Combos
-        if (this.animationCompleted && this.currentAnimation.name != "Idle" && this.currentAnimation.name != "Run") // Player is attacking
+        if (this.animationCompleted && this.currentAnimation.name != "Idle" && this.currentAnimation.name != "Run" && this.currentAnimation.name != "Tired") // Player is attacking
         {
             const currAttack = this.animationNameMap[this.currentAnimation.name];
             for (let i = this.currComboChain.length - 1; i >= 0; i--)
@@ -108,6 +113,14 @@ export class Armature
             if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
             {
                 console.log((this.currComboChain.length == 0 ? "FAILED" : "FULL") + " COMBO");
+
+                if(this.currComboChain.length == 0)
+                {
+                    this.playerRef.currAnimation = "Tired"
+                    this.currentAnimation = this.playerRef.getAnimation();
+                    this.animationCompleted = false;
+                }
+
                 this.comboIndex = 0;
                 this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
             }
