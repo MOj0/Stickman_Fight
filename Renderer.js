@@ -214,11 +214,11 @@ export class Renderer
         const cameraMatrix = camera.getGlobalTransform();
         const playerMatrix = player.getGlobalTransform();
 
-        // Set camera position to that of the player
+        // Set camera position to that of the player, so it always follows him
         cameraMatrix[12] = playerMatrix[12];
         cameraMatrix[13] = playerMatrix[13];
         cameraMatrix[14] = playerMatrix[14];
-        // Translate Z back for viewDistance, that way it always follows the player
+        // Translate Z back for viewDistance
         mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
         
         const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];

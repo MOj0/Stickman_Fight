@@ -13,6 +13,18 @@ export class Armature
         this.bones = skin;
         this.animationCompleted = true;
         this.currentAnimation = null;
+        this.animationStart = null; // Used to start the attack animations from keyframe 0
+
+        this.animationNameMap = {
+            Punch_L: 0,
+            Kick_L: 1,
+            Punch_R: 2,
+            Kick_R: 3,
+        };
+
+        this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]]; // TODO: Add more combos?
+        this.comboIndex = 0;
+        this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
 
         for (const bone of this.bones)
         {
@@ -55,26 +67,54 @@ export class Armature
     // Returns bone matrices for the current frame
     getBoneMatrices(animation, sinceStart)
     {
-        // TODO: Improve and add combo system
-        if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle")
+        if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run")
         {
             this.currentAnimation = animation;
             this.animationCompleted = false;
+
+            // If the animation is Idle or Run, we don't need to start it from 0, since it loops anyways
+            this.animationStart = this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run" ? 0 : sinceStart;
         }
 
         const flat = [];
         const nKeyframes = this.currentAnimation.nKeyframes;
 
         // Improved animations slightly
-        const maxMs = this.currentAnimation.maxKeyframe * 1000;
-        const t = (sinceStart % maxMs) / maxMs;
+        const delta = sinceStart - this.animationStart;
+        const maxMs = this.currentAnimation.maxKeyframe * 3000; // 3000 = 1000 (sec -> ms)  *  3 (3 times slower animations)
+        const t = (delta % maxMs) / maxMs;
         const a = t * this.currentAnimation.nKeyframes;
-        const currKeyframe = ~~(a);
+        const currKeyframe = ~~(a); // Fast Math.floor
         const lerp = a - currKeyframe;
 
         if (currKeyframe >= this.currentAnimation.nKeyframes - 1)
         {
             this.animationCompleted = true;
+        }
+
+        // Combos
+        if (this.animationCompleted && this.currentAnimation.name != "Idle" && this.currentAnimation.name != "Run") // Player is attacking
+        {
+            const currAttack = this.animationNameMap[this.currentAnimation.name];
+            for (let i = this.currComboChain.length - 1; i >= 0; i--)
+            {
+                const combo = this.currComboChain[i];
+                if (combo[this.comboIndex] != currAttack)
+                {
+                    this.currComboChain.splice(i, 1);
+                }
+            }
+            // Either failed the combo or fully completed it
+            if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
+            {
+                console.log((this.currComboChain.length == 0 ? "FAILED" : "FULL") + " COMBO");
+                this.comboIndex = 0;
+                this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
+            }
+            else
+            {
+                this.comboIndex++; // Go to the next index in the combo chain
+            }
         }
 
         for (const i in this.bones)
