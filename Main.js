@@ -4,9 +4,9 @@ import { mat4 } from './lib/gl-matrix-module.js';
 import { Engine } from './Engine.js';
 import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
+import { PerspectiveCamera } from './PerspectiveCamera.js';
 import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
-import { Camera } from "./Camera.js";
 import { MPlayer } from "./server/client/player.js";
 import { OtherPlayer } from "./server/client/OtherPlayers.js";
 import { Hit } from "./server/client/Hit.js";
@@ -208,17 +208,13 @@ class App extends Engine
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene.addNode(this.floor);
 
-
         this.player = this.scene.getNodeByName("Armature");
         this.player.translation = [mPlayer.x, 0, mPlayer.y]; // Sets player location to the one received from server
-        this.camera = new Camera();
 
         this.scene.addNode(this.cube);
 
-        console.log(this.scene);
-        
-        this.camera = new Camera(); // create Camera manually
-        this.player.addChild(this.camera);
+        this.camera = new PerspectiveCamera(); // create Camera manually
+        this.scene.addNode(this.camera);
         
         // All nodes are loaded
         console.log("Nodes in the scene", this.scene.nodes);
@@ -267,7 +263,7 @@ class App extends Engine
 
         if (this.camera)
         {
-            this.camera.update(dt);
+            this.camera.update(dt, this.player);
         }
     }
 
@@ -278,7 +274,7 @@ class App extends Engine
     {
         if (this.renderer && this.camera)
         {
-            this.renderer.render(this.scene, this.camera, sinceStart);
+            this.renderer.render(this.scene, this.player, this.camera, sinceStart);
         }
     }
 

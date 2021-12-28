@@ -12,8 +12,8 @@ import { Node } from "./Node.js";
 import { Player } from "./Player.js";
 import { Armature } from "./Armature.js";
 
-// This class loads all GLTF resources and instantiates
-// the corresponding classes. Resources are loaded sequentially.
+// This class loads all GLTF resources and instantiates the corresponding classes.
+// Resources are loaded sequentially.
 
 export class GLTFLoader
 {
@@ -335,10 +335,11 @@ export class GLTFLoader
         {
             options.mesh = await this.loadMesh(gltfSpec.mesh);
         }
+        let armature = null;
         if (isPlayerNode)
         {
             const skin = this.loadSkin(0); // Armature / Skeleton from gltf
-            const armature = new Armature(skin);
+            armature = new Armature(skin);
             const animations = [];
             for (const animIndex in this.gltf.animations)
             {
@@ -351,6 +352,10 @@ export class GLTFLoader
         }
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
+        if(isPlayerNode)
+        {
+            armature.setPlayerRef(node);
+        }
         this.cache.set(gltfSpec, node);
         return node;
     }
@@ -388,13 +393,13 @@ export class GLTFLoader
             console.log("Erorr: no skins in the gltf found.");
             return;
         }
-        
+
         const bones = [];
         const stack = [];
 
         const rootBoneIndex = skin.joints[0]; // Root is always first ?
         stack.push([rootBoneIndex, null]); // [boneIndex, parentIndex]
-       
+
         while (stack.length > 0)
         {
             const item = stack.pop();
@@ -467,9 +472,10 @@ export class GLTFLoader
             const values = await this.processAccessor(samplerPtr.output); // Output - value
 
             animation.nKeyframes = times.count; // Set number of keyframes
+            animation.maxKeyframe = times.max; // Set max keyframe time
 
             let joint;
-            
+
             if (!animation[nodePtr.name])
                 joint = animation[nodePtr.name] = {};
             else
