@@ -11,6 +11,20 @@ export class Armature
     constructor(skin)
     {
         this.bones = skin;
+        this.animationCompleted = true;
+        this.currentAnimation = null;
+        this.animationStart = null; // Used to start the attack animations from keyframe 0
+
+        this.animationNameMap = {
+            Punch_L: 0,
+            Kick_L: 1,
+            Punch_R: 2,
+            Kick_R: 3,
+        };
+
+        this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]]; // TODO: Add more combos?
+        this.comboIndex = 0;
+        this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
 
         for (const bone of this.bones)
         {
@@ -51,17 +65,64 @@ export class Armature
 
 
     // Returns bone matrices for the current frame
-    getBoneMatrices(animation, keyframe, lerpVal)
+    getBoneMatrices(animation, sinceStart)
     {
+        if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run")
+        {
+            this.currentAnimation = animation;
+            this.animationCompleted = false;
+
+            // If the animation is Idle or Run, we don't need to start it from 0, since it loops anyways
+            this.animationStart = this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run" ? 0 : sinceStart;
+        }
+
         const flat = [];
-        const nKeyframes = animation.nKeyframes;
+        const nKeyframes = this.currentAnimation.nKeyframes;
+
+        // Improved animations slightly
+        const delta = sinceStart - this.animationStart;
+        const maxMs = this.currentAnimation.maxKeyframe * 3000; // 3000 = 1000 (sec -> ms)  *  3 (3 times slower animations)
+        const t = (delta % maxMs) / maxMs;
+        const a = t * this.currentAnimation.nKeyframes;
+        const currKeyframe = ~~(a); // Fast Math.floor
+        const lerp = a - currKeyframe;
+
+        if (currKeyframe >= this.currentAnimation.nKeyframes - 1)
+        {
+            this.animationCompleted = true;
+        }
+
+        // Combos
+        if (this.animationCompleted && this.currentAnimation.name != "Idle" && this.currentAnimation.name != "Run") // Player is attacking
+        {
+            const currAttack = this.animationNameMap[this.currentAnimation.name];
+            for (let i = this.currComboChain.length - 1; i >= 0; i--)
+            {
+                const combo = this.currComboChain[i];
+                if (combo[this.comboIndex] != currAttack)
+                {
+                    this.currComboChain.splice(i, 1);
+                }
+            }
+            // Either failed the combo or fully completed it
+            if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
+            {
+                console.log((this.currComboChain.length == 0 ? "FAILED" : "FULL") + " COMBO");
+                this.comboIndex = 0;
+                this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
+            }
+            else
+            {
+                this.comboIndex++; // Go to the next index in the combo chain
+            }
+        }
 
         for (const i in this.bones)
         {
             const bone = this.bones[i];
             let rotation0, rotation1, translation0, translation1, scale0, scale1;
 
-            if (animation[bone.name] == undefined || animation[bone.name] == null)
+            if (this.currentAnimation[bone.name] == undefined || this.currentAnimation[bone.name] == null)
             {
                 rotation0 = quat.create();
                 rotation1 = rotation0;
@@ -74,15 +135,14 @@ export class Armature
             }
             else
             {
-                // TODO: Use ACTUAL keyframe values (samples[index].t)
-                rotation0 = animation[bone.name].rotation.samples[keyframe % nKeyframes].v;
-                rotation1 = animation[bone.name].rotation.samples[(keyframe + 1) % nKeyframes].v;
+                rotation0 = this.currentAnimation[bone.name].rotation.samples[currKeyframe].v;
+                rotation1 = this.currentAnimation[bone.name].rotation.samples[(currKeyframe + 1) % nKeyframes].v;
 
-                translation0 = animation[bone.name].translation.samples[keyframe % nKeyframes].v;
-                translation1 = animation[bone.name].translation.samples[(keyframe + 1) % nKeyframes].v;
+                translation0 = this.currentAnimation[bone.name].translation.samples[currKeyframe].v;
+                translation1 = this.currentAnimation[bone.name].translation.samples[(currKeyframe + 1) % nKeyframes].v;
 
-                scale0 = animation[bone.name].scale.samples[keyframe % nKeyframes].v;
-                scale1 = animation[bone.name].scale.samples[(keyframe + 1) % nKeyframes].v;
+                scale0 = this.currentAnimation[bone.name].scale.samples[currKeyframe].v;
+                scale1 = this.currentAnimation[bone.name].scale.samples[(currKeyframe + 1) % nKeyframes].v;
             }
 
             const lquat = quat.create();
@@ -90,11 +150,11 @@ export class Armature
             const lvecScale = vec3.create();
 
             // Spherical linear interpolation between the two bones' rotations,
-            quat.slerp(lquat, rotation0, rotation1, lerpVal);
+            quat.slerp(lquat, rotation0, rotation1, lerp);
             // Lerp translation
-            vec3.lerp(lvecTranslate, translation0, translation1, lerpVal);
+            vec3.lerp(lvecTranslate, translation0, translation1, lerp);
             // Lerp scale
-            vec3.lerp(lvecScale, scale0, scale1, lerpVal);
+            vec3.lerp(lvecScale, scale0, scale1, lerp);
 
             mat4.fromRotationTranslationScale(bone.localMatrix, lquat, lvecTranslate, lvecScale);
 
