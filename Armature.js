@@ -27,6 +27,12 @@ export class Armature
         this.comboIndex = 0;
         this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
 
+        console.log("The combos are:");
+        for(const combo of this.allCombos)
+        {
+            console.log(combo.map(value => this.getKeyByValue(this.animationNameMap, value)));
+        }
+
         for (const bone of this.bones)
         {
             bone.localMatrix = mat4.create();
@@ -35,6 +41,11 @@ export class Armature
             bone.offsetMatrix = mat4.create(); // Final matrix to apply to the weighted vertices
         }
         this.setBindPose();
+    }
+
+    getKeyByValue(object, value)
+    {
+        return Object.keys(object).find(key => object[key] === value);
     }
 
     setBindPose()
@@ -112,9 +123,9 @@ export class Armature
             // Either failed the combo or fully completed it
             if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
             {
-                console.log((this.currComboChain.length == 0 ? "FAILED" : "FULL") + " COMBO");
+                console.log((this.currComboChain.length == 0 ? "FAILED" : "COMPLETED") + " COMBO");
 
-                if(this.currComboChain.length == 0)
+                if (this.currComboChain.length == 0)
                 {
                     this.playerRef.currAnimation = "Tired"
                     this.currentAnimation = this.playerRef.getAnimation();
