@@ -467,6 +467,7 @@ export class GLTFLoader
             const values = await this.processAccessor(samplerPtr.output); // Output - value
 
             animation.nKeyframes = times.count; // Set number of keyframes
+            animation.maxKeyframe = times.max; // Set max keyframe time
 
             let joint;
 

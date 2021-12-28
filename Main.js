@@ -7,7 +7,6 @@ import * as FloorModel from "./floor.js";
 import { PerspectiveCamera } from './PerspectiveCamera.js';
 import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
-import { Camera } from "./Camera.js";
 import { MPlayer } from "./server/client/player.js";
 import { OtherPlayer } from "./server/client/OtherPlayers.js";
 import { Hit } from "./server/client/Hit.js";
@@ -170,8 +169,6 @@ class App extends Engine
 
         this.scene.addNode(this.cube);
 
-        console.log(this.scene);
-        
         this.camera = new PerspectiveCamera(); // create Camera manually
         this.scene.addNode(this.camera);
         
