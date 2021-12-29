@@ -22,7 +22,7 @@ export class Camera extends Node
         this.halfpi = Math.PI / 2 - 0.01;
     }
 
-    update(dt, player, mPlayer)
+    update(dt, player, mPlayer, otherPlayers)
     {
         const c = this;
       
@@ -67,8 +67,22 @@ export class Camera extends Node
             vec3.scale(player.velocity, player.velocity, player.maxSpeed / len);
         }
 
-        // 5: update translation
+        // 5: update translation / Collision detection?
+        let canMove = true;
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
+        for (let otherPlayer of otherPlayers)
+        {
+            if (Math.abs(player.translation[0] - otherPlayer.x) + Math.abs(player.translation[2] - otherPlayer.y) < otherPlayer.r)
+            {
+                canMove = false;
+            }
+        }
+        if (!canMove)
+        {
+            let tmpVelocity = [0, 0, 0];
+            vec3.mul(tmpVelocity, player.velocity, [-1, 1, -1]);
+            vec3.scaleAndAdd(player.translation, player.translation, tmpVelocity, dt);
+        }
 
         // Update the final transform
         const t = player.transform;

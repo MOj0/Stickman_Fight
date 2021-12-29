@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () =>
             let totalXP = 37.5*(mPlayer.level * mPlayer.level) + 87.5*mPlayer.level - 125;
             // Calculates percente to get to new level
             let percent = 100 / mPlayer.xpForNextLevel * (mPlayer.xp-totalXP);
-            if(percent <= 25){
+            if (percent <= 25) {
                 $("#xp0").css("height", mapNumber(percent, 0, 25, 0, 100) + "%");
                 $("#xp1").css("width","0%");
                 $("#xp2").css("height","0%");
@@ -277,7 +277,7 @@ class App extends Engine
 
         if (this.camera)
         {
-            this.camera.update(dt, this.player, mPlayer);
+            this.camera.update(dt, this.player, mPlayer, otherPlayers);
         }
     }
 
