@@ -14,7 +14,6 @@ import { GLTFLoader } from "./GLTFLoader.js";
 
 
 let socket;
-let data;
 let mPlayer;
 let ipAddress;
 let hits = [];
@@ -22,7 +21,7 @@ let hitsEnemy = [];
 let updateGUI = true;
 let otherPlayers = [];
 let otherPlayerNodes = [];
-const HIT_RANGE = 0.1;
+const HIT_RANGE = 0.3;
 
 function mapNumber(num, in_min, in_max, out_min, out_max){
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -43,7 +42,16 @@ document.addEventListener("DOMContentLoaded", () =>
         mPlayer = new MPlayer(playerData.player, playerData.x, playerData.y, playerData.life,
                             playerData.maxLife, playerData.xp, playerData.level,
                             playerData.spawnID, playerData.inventory);
-        console.log(playerData);
+        mPlayer.hitWithDelay = (hitType, delay) => {
+            if (!mPlayer.hitTimeout) {
+                setTimeout(() => {
+                    mPlayer.shoot(socket, hits, hitType);
+                }, delay);
+                mPlayer.hitTimeout = true;
+            }
+        };
+        console.log(mPlayer);
+
     });
     socket.on('health', function(life){
         mPlayer.life = life;
@@ -121,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () =>
         
         if (mPlayer && updateGUI) {
             mPlayer.xpForNextLevel = 200 + 75 * (mPlayer.level-1);
-            var totalXP = 37.5*(mPlayer.level * mPlayer.level) + 87.5*mPlayer.level - 125;
+            let totalXP = 37.5*(mPlayer.level * mPlayer.level) + 87.5*mPlayer.level - 125;
             // Calculates percente to get to new level
             let percent = 100 / mPlayer.xpForNextLevel * (mPlayer.xp-totalXP);
             if(percent <= 25){
@@ -257,13 +265,19 @@ class App extends Engine
                     hitsEnemy.splice(i, 1);
                 }
             }
+            if (this.player.completedCombo) {
+                // Client sends completedCombo message to server and receives XP
+                socket.emit('completedCombo');
+                mPlayer.shoot(socket, hits, 2);
+                this.player.completedCombo = false;
+            }
             socket.emit('update', mPlayer, hits); // Send update message to server
         }
 
 
         if (this.camera)
         {
-            this.camera.update(dt, this.player);
+            this.camera.update(dt, this.player, mPlayer);
         }
     }
 
@@ -348,12 +362,12 @@ class App extends Engine
     mousedownHandler(e)
     {
         this.canvas.requestPointerLock();
-        if (e.which === 1) {
+        /*if (e.which === 1) {
             console.log("Left click...");
-            mPlayer.shoot(socket, hits);
+            mPlayer.shoot(socket, hits, 0);
         } else if (e.which === 3) {
             console.log("Right click...");
-        }
+        }*/
     }
 
 }

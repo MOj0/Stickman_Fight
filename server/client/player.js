@@ -7,8 +7,6 @@ export class MPlayer {
         this.h = 1;
         this.x = x;
         this.y = y;
-        this.stableX = x;
-        this.stableY = y;
         this.life = life;
         this.maxLife = maxLife;
         this.xp = xp;
@@ -18,14 +16,11 @@ export class MPlayer {
 
         this.xpForNextLevel = 200;
 
-        this.weaponType = 0;
-        this.itemType = 1;
-       
         this.mouseX = 0;
         this.mouseY = 0;
-        this.moveSpeed = 4;
 
         this.lastHit = "";
+        this.hitTimeout = false;
 
         this.diffX;
         this.diffY;
@@ -34,39 +29,32 @@ export class MPlayer {
         this.i1;
     }
 
-    shoot(socket, hits) {
+    shoot(socket, hits, hitType) {
         if (this.life > 0) {
-            var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, this.weaponType);
+            console.log("hitting");
+            var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType);
 
-            if (this.weaponType === 2) {
-                if (this.inventory[2] > 0) { // Don't shoot if inventory is empty
-                    this.inventory[2] -= 1; // Remove one laser from inventory
-                    var leftHit = new Hit(this.player, this.x, this.y, this.i0.x, this.i0.y, this.weaponType);
-                    var rightHit = new Hit(this.player, this.x, this.y, this.i1.x, this.i1.y, this.weaponType);
-                    //hitsound.play();
-                    socket.emit('shoot', thisHit);
-                    socket.emit('shoot', leftHit);
-                    socket.emit('shoot', rightHit);
-                    hits.push(thisHit);
-                    hits.push(leftHit);
-                    hits.push(rightHit);
-                }
-            } else if (this.weaponType === 0) { // Shoot only one laser
-                if (this.inventory[0] > 0) { // Don't shoot if inventory is empty
-                    this.inventory[0] -= 1; // Remove one laser from inventory
-                    //hitsound.play();
+            if (hitType === 2) { // Combo hits
+                for (let i = 0; i < 3; i++) {
                     socket.emit('shoot', thisHit);
                     hits.push(thisHit);
                 }
-            } else if (this.weaponType === 3) { // Explosive hits
-                if (this.inventory[3] > 0) { // Don't shoot if inventory is empty
-                    this.inventory[3] -= 1; // Remove one explosive laser from inventory
-                    //hitsound.play();
-                    thisHit.weaponType = 3;
+                
+            
+            } else if (hitType === 0) { // Shoot only one laser
+                if (this.inventory[0] > 0) {
+                    this.inventory[0] -= 1;
+                    socket.emit('shoot', thisHit);
+                    hits.push(thisHit);
+                }
+            } else if (hitType === 1) { // Kick
+                if (this.inventory[1] > 0) {
+                    this.inventory[1] -= 1; 
                     socket.emit('shoot', thisHit);
                     hits.push(thisHit);
                 }
             }
+            this.hitTimeout = false;
 
         }
     }

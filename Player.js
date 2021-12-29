@@ -21,6 +21,7 @@ export class Player extends Node
         this.maxSpeed = 3;
         this.friction = 0.2;
         this.acceleration = 20;
+        this.completedCombo = false;
     }
 
     getAnimation()

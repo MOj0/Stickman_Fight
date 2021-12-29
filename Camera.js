@@ -22,7 +22,7 @@ export class Camera extends Node
         this.halfpi = Math.PI / 2 - 0.01;
     }
 
-    update(dt, player)
+    update(dt, player, mPlayer)
     {
         const c = this;
       
@@ -85,21 +85,28 @@ export class Camera extends Node
         player.currAnimation = isMoving ? "Run" : "Idle";
 
         // Override the animation if player is attacking
-        if (this.keys["ArrowLeft"])
+        if (mPlayer.currAnimation !== "Tired")
         {
-            player.currAnimation = "Punch_L";
-        }
-        if (this.keys["ArrowRight"])
-        {
-            player.currAnimation = "Punch_R";
-        }
-        if (this.keys["ArrowUp"])
-        {
-            player.currAnimation = "Kick_L";
-        }
-        if (this.keys["ArrowDown"])
-        {
-            player.currAnimation = "Kick_R";
+            if (this.keys["ArrowLeft"])
+            {
+                player.currAnimation = "Punch_L";
+                mPlayer.hitWithDelay(0, 800);
+            }
+            if (this.keys["ArrowRight"])
+            {
+                player.currAnimation = "Punch_R";
+                mPlayer.hitWithDelay(0, 800);
+            }
+            if (this.keys["ArrowUp"])
+            {
+                player.currAnimation = "Kick_L";
+                mPlayer.hitWithDelay(0, 800);
+            }
+            if (this.keys["ArrowDown"])
+            {
+                player.currAnimation = "Kick_R";
+                mPlayer.hitWithDelay(0, 800);
+            }
         }
     }
 

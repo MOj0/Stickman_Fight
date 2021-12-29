@@ -7,15 +7,8 @@ var items = [];
 totalXPTable = [0, 200, 475, 825, 1250, 1750, 2325, 2975, 3700, 4500, 5375, 6325, 7350, 8450, 9625, 10875, 12200, 13600, 15075, 16625, 18250, 19950, 21725, 23575, 25500, 27500, 29575, 31725, 33950, 36250, 38625, 41075, 43600, 46200, 48875, 51625, 54450, 57350, 60325, 63375, 66500, 69700, 72975, 76325, 79750, 83250, 86825, 90475, 94200, 98000, 101875, 105825, 109850, 113950, 118125, 122375, 126700, 131100, 135575, 140125, 144750, 149450, 154225, 159075, 164000, 169000, 174075, 179225, 184450, 189750, 195125, 200575, 206100, 211700, 217375, 223125, 228950, 234850, 240825, 246875, 253000, 259200, 265475, 271825, 278250, 284750, 291325, 297975, 304700, 311500, 318375, 325325, 332350, 339450, 346625, 353875, 361200, 368600, 376075, 383625, 391250, 398950, 406725, 414575, 422500, 430500, 438575, 446725, 454950, 463250, 471625, 480075, 488600, 497200, 505875, 514625, 523450, 532350, 541325, 550375, 559500, 568700, 577975, 587325, 596750, 606250, 615825, 625475, 635200, 645000, 654875, 664825, 674850, 684950, 695125, 705375, 715700, 726100, 736575, 747125, 757750, 768450, 779225, 790075, 801000, 812000, 823075, 834225, 845450, 856750, 868125, 879575, 891100, 902700, 914375, 926125, 937950, 949850, 961825, 973875, 986000, 998200, 1010475, 1022825, 1035250, 1047750, 1060325, 1072975, 1085700, 1098500, 1111375, 1124325, 1137350, 1150450, 1163625, 1176875, 1190200, 1203600, 1217075, 1230625, 1244250, 1257950, 1271725, 1285575, 1299500, 1313500, 1327575, 1341725, 1355950, 1370250, 1384625, 1399075, 1413600, 1428200, 1442875, 1457625, 1472450, 1487350, 1502325, 1517375, 1532500, 1547700, 1562975, 1578325, 1593750, 1609250, 1624825, 1640475, 1656200, 1672000, 1687875, 1703825, 1719850, 1735950, 1752125, 1768375, 1784700, 1801100, 1817575, 1834125, 1850750, 1867450, 1884225, 1901075, 1918000, 1935000, 1952075, 1969225, 1986450, 2003750, 2021125, 2038575, 2056100, 2073700, 2091375, 2109125, 2126950, 2144850, 2162825, 2180875, 2199000, 2217200, 2235475, 2253825, 2272250, 2290750, 2309325, 2327975, 2346700, 2365500, 2384375, 2403325, 2422350, 2441450, 2460625, 2479875, 2499200, 2518600, 2538075, 2557625, 2577250, 2596950, 2616725, 2636575, 2656500, 2676500, 2696575, 2716725, 2736950, 2757250, 2777625, 2798075, 2818600, 2839200, 2859875, 2880625, 2901450, 2922350, 2943325, 2964375];
 
 let inventory = { // Change values as needed
-    0: 100000, // Normal hits
-    1: 3, // Item / Radar
-    2: 5, // 3 hits
-    3: 3, // Explosive hits
-    4: 0, // Health
-    5: 0, // IncreaseMaxHealth
-    6: 0, // Teleport
-    7: 0, // ??
-    8: 0 // Jump
+    0: 100000, // Punches
+    1: 100000, // Kicks
 }
 
 function queryXPLookupTable(currentXP) { // Return player level
@@ -90,7 +83,7 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.x = x;
     this.y = y;
     this.life = life;
-    this.weaponType = 0;
+    this.hitType = 0;
     this.spawnID = spawnID;
     this.maxLife = maxLife;
     this.xp = xp;
@@ -100,13 +93,13 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.xpTimeout = true; // Enable only one XP add to run at a time
 }
 
-function Hit(player, x, y, targetX, targetY, weaponType) {
+function Hit(player, x, y, targetX, targetY, hitType) {
     this.player = player;
     this.x = x;
     this.y = y;
     this.targetX = targetX;
     this.targetY = targetY;
-    this.weaponType = weaponType;
+    this.hitType = hitType;
 
 }
 
@@ -165,8 +158,8 @@ function heartbeat() {
                 players[i].inventory[itemType] += 1;
                 console.log("Giving item " + itemType + " to player: " + players[i].player);
                 io.sockets.to(players[i].id).emit('updateInventory', players[i].inventory);
-                items.splice(j, 1);
-                items.push(new Item(randomItem(), random(1000, 4000), random(1000, 4000))); // For each removed item add a new one
+                /*items.splice(j, 1);
+                items.push(new Item(randomItem(), random(1000, 4000), random(1000, 4000))); // For each removed item add a new one*/
 
             }
         }
@@ -248,9 +241,19 @@ io.sockets.on('connection',
         socket.on('shoot', function (playerHit) {
             var hit = new Hit(playerHit.player, playerHit.x,
                 playerHit.y, playerHit.targetX,
-                playerHit.targetY, playerHit.weaponType);
+                playerHit.targetY, playerHit.hitType);
             hitsAll.push(hit);
             // console.log(hitsAll);
+        });
+
+        socket.on('completedCombo', function () {
+            for (var i = 0; i < players.length; i++) {
+                if (socket.id === players[i].id) {
+                    players[i].xp += 5;
+                    io.sockets.to(players[i].id).emit('updateXP', players[i].xp);
+                    io.sockets.to(players[i].id).emit('updateLevel', queryXPLookupTable(players[i].xp));
+                }
+            }
         });
 
 
