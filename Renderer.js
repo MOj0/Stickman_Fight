@@ -14,7 +14,6 @@ export class Renderer
         this.glObjects = new Map();
 
         this.timeOld = 0;
-        this.curLerp = 0;
 
         gl.clearColor(0.45, 0.7, 1, 1);
         gl.enable(gl.DEPTH_TEST);
@@ -199,12 +198,6 @@ export class Renderer
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
         const program = this.programs.shader;
-        const delta = sinceStart - (this.timeOld);
-
-        this.curLerp += delta * 0.008;
-
-        // Ensure curLerp is in [0, 1]
-        this.curLerp = this.curLerp >= 1 ? 0 : this.curLerp;
 
         gl.useProgram(program.program);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -230,6 +223,8 @@ export class Renderer
         // Gets the bone positions for the current frame of animation
         const animation = player.getAnimation();
         const boneMatrices = player.armature.getBoneMatrices(animation, sinceStart);
+
+        // Debug
         const identity = [
             1., 0., 0., 0.,
             0., 1., 0., 0.,

@@ -11,6 +11,7 @@ import { MPlayer } from "./server/client/player.js";
 import { OtherPlayer } from "./server/client/OtherPlayers.js";
 import { Hit } from "./server/client/Hit.js";
 import { GLTFLoader } from "./GLTFLoader.js";
+import { Player } from './Player.js';
 
 
 let socket;
@@ -34,10 +35,15 @@ document.addEventListener("DOMContentLoaded", () =>
     socket = io.connect(ipAddress + '/');
     $("#overlay").hide();
 
+    const canvas = document.querySelector("canvas");
+    const app = new App(canvas);
+    
     // On 'start' message, server generates the player object and returns it as a response
     let uid = (Math.random() + 1).toString(36).substring(2);
     console.log("Player UID:", uid);
     socket.emit('start', uid, function(playerData){
+        console.log("START other players; ", otherPlayers);
+        console.log("START scene: ", app.scene);
         // Generating player
         mPlayer = new MPlayer(playerData.player, playerData.x, playerData.y, playerData.life,
                             playerData.maxLife, playerData.xp, playerData.level,
@@ -65,9 +71,6 @@ document.addEventListener("DOMContentLoaded", () =>
         mPlayer.level = level;
         console.log("LEVEL from server: "+level);
     });
-    
-    const canvas = document.querySelector("canvas");
-    const app = new App(canvas);
 
     socket.on('updatePosition', function(x, y){
         mPlayer.x = x;
@@ -94,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () =>
         otherPlayers.length = 0;
         otherPlayerNodes.length = 0;
         for (var i = 0; i < players.length; i++) {
-            if (mPlayer !== undefined && mPlayer.player !== players[i].player) { // 
+            if (mPlayer !== undefined && mPlayer.player !== players[i].player) {
                 otherPlayers.push(new OtherPlayer(players[i].id, players[i].player, players[i].x, players[i].y, players[i].life));
             }
         }
@@ -109,13 +112,19 @@ document.addEventListener("DOMContentLoaded", () =>
  
         for (var i = 0; i < otherPlayers.length; i++) {
             if (app.scene !== undefined) app.removeNodeByName(app.scene.nodes, otherPlayers[i].player);
+
             let tmp = new Node({
                 model:  cubeModel,
                 texture:  cubeTexture
             });
+            if(app.loader !== undefined)
+            {
+                tmp = new Node(app.loader.playerOptions);
+            }
+            
             tmp.name = otherPlayers[i].player;
             if (app.scene !== undefined) app.scene.addNode(tmp);
-        }       
+        }
 
         if (app.scene !== undefined) {
             for (let i in otherPlayers) {
@@ -175,7 +184,6 @@ class App extends Engine
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
 
-
         this.loader = new GLTFLoader();
         this.pointerlockchangeHandler = this.pointerlockchangeHandler.bind(this);
         this.mousedownHandler = this.mousedownHandler.bind(this);
@@ -196,7 +204,6 @@ class App extends Engine
         });
 
         mat4.fromScaling(this.floor.transform, [30, 1, 30]);
-        mat4.fromScaling(this.floor.transform, [10, 1, 10]);
 
         const cubeModel = this.createModel(CubeModel);
         const cubeTexture = Engine.createTexture(gl, {
