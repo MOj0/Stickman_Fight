@@ -22,13 +22,13 @@ export class Player extends Node
         this.completedCombo = false;
     }
 
-    getAnimation()
+    getAnimation(name = null)
     {
         for(const animation of this.animations)
         {
-            if(animation.name == this.currAnimation)
+            if(name == null && animation.name == this.currAnimation || name != null && animation.name == name)
             {
-                return animation; 
+                return animation;
             }
         }
         return null;

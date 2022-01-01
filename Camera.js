@@ -27,7 +27,7 @@ export class Camera extends Node
         const c = this;
 
         player.rotation[1] = c.rotation[1]; // Lock player's Y rotation to camera's Y rotation
-      
+
         // Note: the formulas are changed, because the player is rotated 180 deg
         const forward = vec3.set(vec3.create(), Math.sin(player.rotation[1]), 0, Math.cos(player.rotation[1]));
         const right = vec3.set(vec3.create(), -Math.cos(player.rotation[1]), 0, Math.sin(player.rotation[1]));
@@ -98,7 +98,7 @@ export class Camera extends Node
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
         // Animations
-        if(player.currAnimation != "Tired")
+        if (player.currAnimation != "Tired")
         {
             player.currAnimation = isMoving ? "Run" : "Idle";
         }
@@ -182,7 +182,7 @@ export class Camera extends Node
 
     wheelHandler(e)
     {
-        this.viewDistance += e.deltaY / 200;
+        this.viewDistance = Math.min(30, Math.max(8, this.viewDistance + e.deltaY / 200));
     }
 }
 

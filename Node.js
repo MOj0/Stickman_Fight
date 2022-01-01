@@ -8,11 +8,11 @@ export class Node
         this.children = []; // Children have to be initialized first!
         this.parent = null;
 
-        // NOTE: Node.defaults ARE FUCKED, so a hardcoded object is used instead
+        // NOTE: Node.defaults are behaving strangely, so a hardcoded object is used instead
         Utils.init(this, {translation: [0, 0, 0],rotation: [0, 0, 0],scale: [1, 1, 1],aabb: {min: [0, 0, 0],max: [0, 0, 0],},},
             options);
         
-        // Utils.init(this, Node.defaults, options); // Fucked
+        // Utils.init(this, Node.defaults, options); // NOTE: Causes bugs when adding new objects all the time
 
         this.transform = mat4.create(); // "local" transform of current node
         this.updateTransform();

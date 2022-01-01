@@ -121,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () =>
             }
             
             tmp.name = otherPlayers[i].player;
+            //TODO: tmp.currAnimation = otherPlayers[i].currAnimation
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 
@@ -302,7 +303,7 @@ class App extends Engine
         {
             this.camera.enable();
         }
-        else
+        else if(this.camera)
         {
             this.camera.disable();
         }

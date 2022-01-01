@@ -213,9 +213,9 @@ export class Renderer
         cameraMatrix[14] = playerMatrix[14];
         // Translate Z back for viewDistance
         mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
-        
+
         const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-        const playerPosition = [playerMatrix[12], playerMatrix[13], playerMatrix[14]];
+        const playerPosition = [playerMatrix[12], playerMatrix[13] + 5, playerMatrix[14]];
         const up = [0, 1, 0];
         const viewMatrix = mat4.lookAt(mat4.create(), cameraPosition, playerPosition, up); // look at the player
 
@@ -245,6 +245,14 @@ export class Renderer
         const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
         for (const node of scene.nodes)
         {
+            if (node.name && node.name.startsWith("0.")) // Another player
+            {
+                //TODO: Use this: const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
+                                  const anotherPlayerAnimation = player.getAnimation("Run");
+
+                const boneMatrices = player.armature.getBoneMatricesAnimation(anotherPlayerAnimation, sinceStart);
+                gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+            }
             this.renderNode(node, mvpMatrix);
         }
 
@@ -278,7 +286,7 @@ export class Renderer
 
         for (const child of node.children)
         {
-            if(child.isJoint || (child.name && child.name == "Camera"))
+            if (child.isJoint || (child.name && child.name == "Camera"))
             {
                 continue;
             }

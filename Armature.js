@@ -95,9 +95,8 @@ export class Armature
         const flat = [];
         const nKeyframes = this.currentAnimation.nKeyframes;
 
-        // Improved animations slightly
         const delta = sinceStart - this.animationStart;
-        const maxMs = this.currentAnimation.maxKeyframe * 3000; // 3000 = 1000 (sec -> ms)  *  3 (3 times slower animations)
+        const maxMs = this.currentAnimation.maxKeyframe * 2000; // 3000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
         const t = (delta % maxMs) / maxMs;
         const a = t * this.currentAnimation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
@@ -168,6 +167,84 @@ export class Armature
 
                 scale0 = this.currentAnimation[bone.name].scale.samples[currKeyframe].v;
                 scale1 = this.currentAnimation[bone.name].scale.samples[(currKeyframe + 1) % nKeyframes].v;
+            }
+
+            const lquat = quat.create();
+            const lvecTranslate = vec3.create();
+            const lvecScale = vec3.create();
+
+            // Spherical linear interpolation between the two bones' rotations,
+            quat.slerp(lquat, rotation0, rotation1, lerp);
+            // Lerp translation
+            vec3.lerp(lvecTranslate, translation0, translation1, lerp);
+            // Lerp scale
+            vec3.lerp(lvecScale, scale0, scale1, lerp);
+
+            mat4.fromRotationTranslationScale(bone.localMatrix, lquat, lvecTranslate, lvecScale);
+
+            // Use the bone hierarchy, important: all parents must be evaluated BEFORE their children
+            if (bone.parent == null || bone.parent == -1)
+            {
+                mat4.copy(bone.worldMatrix, bone.localMatrix);
+            }
+            else
+            {
+                mat4.multiply(bone.worldMatrix, this.bones[bone.parent].worldMatrix, bone.localMatrix);
+            }
+
+            // Get the offset matrix = worldMatrix * bone's inverse bindpose
+            mat4.multiply(bone.offsetMatrix, bone.worldMatrix, bone.inverseBindpose);
+
+            flat.push.apply(flat, bone.offsetMatrix); // Apply also flattens the nested arrays
+        }
+
+        return new Float32Array(flat);
+    }
+
+
+    getBoneMatricesAnimation(animation, sinceStart)
+    {
+        const flat = [];
+        const nKeyframes = animation.nKeyframes;
+
+        const delta = sinceStart - this.animationStart;
+        const maxMs = animation.maxKeyframe * 2000; // 2000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
+        const t = (delta % maxMs) / maxMs;
+        const a = t * animation.nKeyframes;
+        const currKeyframe = ~~(a); // Fast Math.floor
+        const lerp = a - currKeyframe;
+
+        // if (currKeyframe >= animation.nKeyframes - 1)
+        // {
+        //     this.animationCompleted = true;
+        // }
+
+        for (const i in this.bones)
+        {
+            const bone = this.bones[i];
+            let rotation0, rotation1, translation0, translation1, scale0, scale1;
+
+            if (animation[bone.name] == undefined || animation[bone.name] == null)
+            {
+                rotation0 = quat.create();
+                rotation1 = rotation0;
+
+                translation0 = vec3.create();
+                translation1 = translation0;
+
+                scale0 = vec3.fromValues(1, 1, 1);
+                scale0 = scale1;
+            }
+            else
+            {
+                rotation0 = animation[bone.name].rotation.samples[currKeyframe].v;
+                rotation1 = animation[bone.name].rotation.samples[(currKeyframe + 1) % nKeyframes].v;
+
+                translation0 = animation[bone.name].translation.samples[currKeyframe].v;
+                translation1 = animation[bone.name].translation.samples[(currKeyframe + 1) % nKeyframes].v;
+
+                scale0 = animation[bone.name].scale.samples[currKeyframe].v;
+                scale1 = animation[bone.name].scale.samples[(currKeyframe + 1) % nKeyframes].v;
             }
 
             const lquat = quat.create();
