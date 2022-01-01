@@ -96,10 +96,13 @@ export class Camera extends Node
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
         // Animations
-        player.currAnimation = isMoving ? "Run" : "Idle";
+        if(player.currAnimation != "Tired")
+        {
+            player.currAnimation = isMoving ? "Run" : "Idle";
+        }
 
         // Override the animation if player is attacking
-        if (mPlayer.currAnimation !== "Tired")
+        if (player.currAnimation !== "Tired")
         {
             if (this.keys["ArrowLeft"])
             {

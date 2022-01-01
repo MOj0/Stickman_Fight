@@ -365,16 +365,4 @@ class App extends Engine
             this.camera.disable();
         }
     }
-
-    mousedownHandler(e)
-    {
-        this.canvas.requestPointerLock();
-        /*if (e.which === 1) {
-            console.log("Left click...");
-            mPlayer.shoot(socket, hits, 0);
-        } else if (e.which === 3) {
-            console.log("Right click...");
-        }*/
-    }
-
 }

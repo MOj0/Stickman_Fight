@@ -128,7 +128,7 @@ export class Armature
                 
                 if (this.currComboChain.length == 0)
                 {
-                    this.playerRef.currAnimation = "Tired"
+                    this.playerRef.setAnimationTired();
                     this.currentAnimation = this.playerRef.getAnimation();
                     this.animationCompleted = false;
                 }
