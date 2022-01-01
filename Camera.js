@@ -25,6 +25,8 @@ export class Camera extends Node
     update(dt, player, mPlayer, otherPlayers)
     {
         const c = this;
+
+        player.rotation[1] = c.rotation[1]; // Lock player's Y rotation to camera's Y rotation
       
         // Note: the formulas are changed, because the player is rotated 180 deg
         const forward = vec3.set(vec3.create(), Math.sin(player.rotation[1]), 0, Math.cos(player.rotation[1]));

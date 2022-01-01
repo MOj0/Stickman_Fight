@@ -42,8 +42,6 @@ document.addEventListener("DOMContentLoaded", () =>
     let uid = (Math.random() + 1).toString(36).substring(2);
     console.log("Player UID:", uid);
     socket.emit('start', uid, function(playerData){
-        console.log("START other players; ", otherPlayers);
-        console.log("START scene: ", app.scene);
         // Generating player
         mPlayer = new MPlayer(playerData.player, playerData.x, playerData.y, playerData.life,
                             playerData.maxLife, playerData.xp, playerData.level,
@@ -229,7 +227,6 @@ class App extends Engine
         this.scene.addNode(this.cube);
 
         this.camera = new PerspectiveCamera(); // create Camera manually
-        this.scene.addNode(this.camera);
         
         // All nodes are loaded
         console.log("Nodes in the scene", this.scene.nodes);
