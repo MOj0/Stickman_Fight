@@ -13,6 +13,8 @@ export class MPlayer {
         this.level = level;
         this.spawnID = spawn;
         this.inventory = inventory;
+        this.rotation = [];
+        this.currAnimation = "";
 
         this.xpForNextLevel = 200;
 

@@ -247,8 +247,8 @@ export class Renderer
         {
             if (node.name && node.name.startsWith("0.")) // Another player
             {
-                //TODO: Use this: const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
-                                  const anotherPlayerAnimation = player.getAnimation("Run");
+                const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
+                // const anotherPlayerAnimation = player.getAnimation("Run");
 
                 const boneMatrices = player.armature.getBoneMatricesAnimation(anotherPlayerAnimation, sinceStart);
                 gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader

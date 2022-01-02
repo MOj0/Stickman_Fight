@@ -89,6 +89,7 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.xp = xp;
     this.level = level;
     this.inventory = inventory;
+    this.currAnimation = "";
     this.timeout = true; // Enable only one updatePlayer to run at a time
     this.xpTimeout = true; // Enable only one XP add to run at a time
 }
@@ -204,6 +205,8 @@ io.sockets.on('connection',
                     player.life = data.life;
                     player.lastHit = data.lastHit;
                     player.inventory = data.inventory;
+                    player.rotation = data.rotation;
+                    player.currAnimation = data.currAnimation;
 
                     if (player.life <= 0) {
                         // console.log("Last hit: " + player.lasthit);

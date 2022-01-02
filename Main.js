@@ -24,7 +24,8 @@ let otherPlayers = [];
 let otherPlayerNodes = [];
 const HIT_RANGE = 0.3;
 
-function mapNumber(num, in_min, in_max, out_min, out_max){
+function mapNumber(num, in_min, in_max, out_min, out_max)
+{
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
@@ -96,7 +97,11 @@ document.addEventListener("DOMContentLoaded", () =>
         otherPlayerNodes.length = 0;
         for (var i = 0; i < players.length; i++) {
             if (mPlayer !== undefined && mPlayer.player !== players[i].player) {
-                otherPlayers.push(new OtherPlayer(players[i].id, players[i].player, players[i].x, players[i].y, players[i].life));
+                otherPlayers.push(
+                    new OtherPlayer(
+                        players[i].id, players[i].player, players[i].x, players[i].y,
+                        players[i].life, players[i].currAnimation, players[i].rotation
+                ));
             }
         }
         
@@ -121,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () =>
             }
             
             tmp.name = otherPlayers[i].player;
-            //TODO: tmp.currAnimation = otherPlayers[i].currAnimation
+            tmp.currAnimation = otherPlayers[i].currAnimation;
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 
@@ -130,6 +135,7 @@ document.addEventListener("DOMContentLoaded", () =>
                 let tmp = app.scene.getNodeByName(otherPlayers[i].player);
                 if (tmp !== undefined) {
                     tmp.translation = [otherPlayers[i].x, 0, otherPlayers[i].y];
+                    tmp.rotation = otherPlayers[i].rotation;
                     tmp.updateTransform();
                 }
             }
@@ -248,6 +254,7 @@ class App extends Engine
         if (mPlayer !== undefined && this.player !== undefined) {
             mPlayer.x = this.player.translation[0];
             mPlayer.y = this.player.translation[2];
+            mPlayer.rotation = this.player.rotation;
 
             mPlayer.mouseX = mPlayer.x - Math.sin(this.camera.rotation[1]);
             mPlayer.mouseY = mPlayer.y - Math.cos(this.camera.rotation[1]);
