@@ -32,7 +32,7 @@ function mapNumber(num, in_min, in_max, out_min, out_max)
 document.addEventListener("DOMContentLoaded", () =>
 {
     ipAddress = window.location.host;
-    console.log("Server IP ", ipAddress)
+    // console.log("Server IP ", ipAddress)
     socket = io.connect(ipAddress + '/');
     $("#overlay").hide();
 
@@ -126,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () =>
             }
             tmp.name = otherPlayers[i].player;
             tmp.currAnimation = otherPlayers[i].currAnimation;
-            // console.log(tmp.currAnimation);
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 
@@ -244,6 +243,11 @@ class App extends Engine
                 }
             }
             mPlayer.health(hitsEnemy);
+            if(mPlayer.currAnimation.startsWith("Hit")) // If this player is being hit
+            {
+                this.player.currAnimation = mPlayer.currAnimation; // Set the animation to the one it recieved from the server
+                this.player.resetAnimation = false;
+            }
             updateGUI = true;
             // Enemy hits move/remove
             for (var i = 0; i < hitsEnemy.length; i++) {

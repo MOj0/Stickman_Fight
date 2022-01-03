@@ -16,6 +16,9 @@ export class MPlayer {
         this.rotation = [];
         this.currAnimation = "";
 
+        this.setHitAnimation = false;
+        this.random = 0;
+
         this.xpForNextLevel = 200;
 
         this.mouseX = 0;
@@ -68,10 +71,18 @@ export class MPlayer {
                 this.lastHit = hitsEnemy[i].player;
                 console.log("Got hit by: " + this.lastHit + " damage taken: " + hitsEnemy[i].damage);
                 this.life -= hitsEnemy[i].damage; // Damage taken
-                this.currAnimation = "Hit_Center"; // FIXME: Display hit animation!
+                this.setHitAnimation = true;
+                this.random = Math.random();
+                setTimeout(() => this.setHitAnimation = false, 500);
                 hitsEnemy.splice(i, 1); // Removes hits that hit the player
             }
         }
+
+        // Set current animation to a random hit animation
+        if(this.setHitAnimation)
+            this.currAnimation = this.random < 0.5 ? "Hit_Center" : this.random < 0.75 ? "Hit_L" : "Hit_R";
+        else if(this.currAnimation.startsWith("Hit"))
+            this.currAnimation = "";
 
         if (this.life <= 0) {
             console.log("You died...");

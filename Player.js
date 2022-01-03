@@ -21,6 +21,8 @@ export class Player extends Node
         this.acceleration = 100;
         this.completedCombo = false;
         this.resetAnimation = true;
+
+        this.armature.playerRef = this;
     }
 
     getAnimation(name = null)
@@ -33,6 +35,11 @@ export class Player extends Node
             }
         }
         return null;
+    }
+
+    getAnimationBoneMatrices(sinceStart)
+    {
+        return this.armature.getBoneMatrices(this.getAnimation(), sinceStart);
     }
 
     setAnimationTired()

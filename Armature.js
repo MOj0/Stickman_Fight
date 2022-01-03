@@ -75,17 +75,9 @@ export class Armature
         }
     }
 
-    setPlayerRef(player)
-    {
-        this.playerRef = player;
-    }
-
     // Returns bone matrices for the current frame
     getBoneMatrices(animation, sinceStart)
     {
-        // if(this.currentAnimation)
-            // console.log(this.playerRef.currAnimation, this.currentAnimation.name);
-            
         // If animation should restart (Idle and Run can restart at anytime)
         if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run")
         {
@@ -131,8 +123,7 @@ export class Armature
             // Either failed the combo or fully completed it
             if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
             {
-                console.log((this.currComboChain.length == 0 ? "FAILED" : "COMPLETED") + " COMBO");
-                // this.playerRef.completedCombo = this.currComboChain.length != 0;
+                // console.log((this.currComboChain.length == 0 ? "FAILED" : "COMPLETED") + " COMBO");
                 this.playerRef.completedCombo = this.currComboChain.length == 0 ? "FAILED" : "COMPLETED";
 
                 if (this.currComboChain.length == 0)

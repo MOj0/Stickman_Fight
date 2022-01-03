@@ -355,10 +355,8 @@ export class GLTFLoader
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
         if(isPlayerNode)
-        {
-            armature.setPlayerRef(node);
             this.playerOptions = options;
-        }
+        
         this.cache.set(gltfSpec, node);
         return node;
     }

@@ -109,8 +109,8 @@ export class Camera extends Node
             player.currAnimation = isMoving ? "Run" : "Idle";
         }
         
-        // Override the animation if player is attacking
-        if (player.currAnimation !== "Tired" && player.currAnimation !== "Hit_Center")
+        // If animation can be reset and player is attacking => override the animation
+        if (player.resetAnimation)
         {
             if (this.keys["ArrowLeft"])
             {
@@ -138,7 +138,6 @@ export class Camera extends Node
             }
         }
         mPlayer.currAnimation = player.currAnimation;
-        // mPlayer.currAnimation = "Hit_Center";
     }
 
     updateProjection()

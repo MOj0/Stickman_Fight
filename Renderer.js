@@ -221,8 +221,7 @@ export class Renderer
 
         // ANIMATIONS
         // Gets the bone positions for the current frame of animation
-        const animation = player.getAnimation();
-        const boneMatrices = player.armature.getBoneMatrices(animation, sinceStart);
+        const boneMatrices = player.getAnimationBoneMatrices(sinceStart);
 
         // Debug
         const identity = [
