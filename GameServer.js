@@ -94,13 +94,15 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.xpTimeout = true; // Enable only one XP add to run at a time
 }
 
-function Hit(player, x, y, targetX, targetY, hitType) {
+function Hit(player, x, y, targetX, targetY, hitType, comboMultiplier) {
     this.player = player;
     this.x = x;
     this.y = y;
     this.targetX = targetX;
     this.targetY = targetY;
     this.hitType = hitType;
+    this.comboMultiplier = comboMultiplier;
+
 
 }
 
@@ -181,7 +183,7 @@ io.sockets.on('connection',
             console.log(socket.id + " sent a START request with UID: " + uid);
             let playerName = "" + Math.random();
             // Creating new Player object with data from database
-            var player = new Player(socket.id, uid, playerName, random(-10, 25), random(-10, 25), 100, "", 100, 0, 0, inventory);
+            var player = new Player(socket.id, uid, playerName, random(-10, 25), random(-10, 25), 100, "", 100, 0, 1, inventory);
 
             data(player); // Data that is sent as a response(player object)
             players.push(player);
@@ -244,17 +246,27 @@ io.sockets.on('connection',
         socket.on('shoot', function (playerHit) {
             var hit = new Hit(playerHit.player, playerHit.x,
                 playerHit.y, playerHit.targetX,
-                playerHit.targetY, playerHit.hitType);
+                playerHit.targetY, playerHit.hitType, playerHit.comboMultiplier);
             hitsAll.push(hit);
-            // console.log(hitsAll);
+            // console.log(playerHit, hit);
         });
 
         socket.on('completedCombo', function () {
             for (var i = 0; i < players.length; i++) {
                 if (socket.id === players[i].id) {
                     players[i].xp += 5;
+                    players[i].level += 1;
                     io.sockets.to(players[i].id).emit('updateXP', players[i].xp);
-                    io.sockets.to(players[i].id).emit('updateLevel', queryXPLookupTable(players[i].xp));
+                    io.sockets.to(players[i].id).emit('updateLevel', players[i].level);
+                    // io.sockets.to(players[i].id).emit('updateLevel', queryXPLookupTable(players[i].xp));
+                }
+            }
+        });
+        socket.on('resetCombo', function () {
+            for (var i = 0; i < players.length; i++) {
+                if (socket.id === players[i].id) {
+                    players[i].level = 1;
+                    io.sockets.to(players[i].id).emit('updateLevel', players[i].level);
                 }
             }
         });

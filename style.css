@@ -185,41 +185,6 @@ a.back:hover {
 
 }
 
-.xpIndicator {
-    content: "";
-    background: red;
-    position: absolute;
-
-}
-
-#xp0 {
-    bottom: 0;
-    left: 0;
-    height: 0%;
-    width: 5px;
-}
-
-#xp1 {
-    top: 0;
-    left: 0;
-    height: 5px;
-    width: 0%;
-}
-
-#xp2 {
-    top: 0;
-    right: 0;
-    height: 0%;
-    width: 5px;
-}
-
-#xp3 {
-    bottom: 0;
-    right: 0;
-    height: 5px;
-    width: 0%;
-}
-
 #xp p {
     margin: 2% 0 0 0;
     font-weight: bold;
@@ -238,9 +203,18 @@ a.back:hover {
     text-align: center;
     font-weight: bold;
     font-size: 3.1vw;
-
 }
-
+#xpCount {
+    position: absolute;
+    top: 0%;
+    left: 100%;
+    transform: translate(-50%, 0);
+    width: 50%;
+    height: 50%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 2vw;
+}
 #overlay {
     display: none;
     position: absolute;

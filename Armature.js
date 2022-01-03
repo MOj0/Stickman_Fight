@@ -123,8 +123,9 @@ export class Armature
             if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
             {
                 console.log((this.currComboChain.length == 0 ? "FAILED" : "COMPLETED") + " COMBO");
-                this.playerRef.completedCombo = this.currComboChain.length != 0;
-                
+                // this.playerRef.completedCombo = this.currComboChain.length != 0;
+                this.playerRef.completedCombo = this.currComboChain.length == 0 ? "FAILED" : "COMPLETED";
+
                 if (this.currComboChain.length == 0)
                 {
                     this.playerRef.setAnimationTired();

@@ -33,17 +33,15 @@ export class MPlayer {
 
     shoot(socket, hits, hitType) {
         if (this.life > 0) {
-            console.log("hitting");
-            var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType);
+            // console.log("hitting");
+            var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level);
 
             if (hitType === 2) { // Combo hits
                 for (let i = 0; i < 3; i++) {
                     socket.emit('shoot', thisHit);
                     hits.push(thisHit);
-                }
-                
-            
-            } else if (hitType === 0) { // Shoot only one laser
+                }            
+            } else if (hitType === 0) {
                 if (this.inventory[0] > 0) {
                     this.inventory[0] -= 1;
                     socket.emit('shoot', thisHit);
@@ -57,7 +55,6 @@ export class MPlayer {
                 }
             }
             this.hitTimeout = false;
-
         }
     }
     dist(x1, y1, x2, y2) {
@@ -69,7 +66,7 @@ export class MPlayer {
                 this.dist(hitsEnemy[i].x, hitsEnemy[i].y, this.x, this.y) <= 3) { // Distance between laser and player
                 //console.log(hitsEnemy[i]);
                 this.lastHit = hitsEnemy[i].player;
-                console.log("Got hit by: " + this.lastHit);
+                console.log("Got hit by: " + this.lastHit + " damage taken: " + hitsEnemy[i].damage);
                 this.life -= hitsEnemy[i].damage; // Damage taken
                 hitsEnemy.splice(i, 1); // Removes hits that hit the player
             }

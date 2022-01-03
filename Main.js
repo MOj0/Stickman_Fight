@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () =>
         for (var i = 0; i < hitsAll.length; i++) {
             hitsEnemy.push(new Hit(hitsAll[i].player, hitsAll[i].x,
             hitsAll[i].y, hitsAll[i].targetX, hitsAll[i].targetY,
-            hitsAll[i].weaponType));
+            hitsAll[i].weaponType, hitsAll[i].comboMultiplier));
         }
         // Receive and generate all other players
         otherPlayers.length = 0;
@@ -142,32 +142,6 @@ document.addEventListener("DOMContentLoaded", () =>
         }
         
         if (mPlayer && updateGUI) {
-            mPlayer.xpForNextLevel = 200 + 75 * (mPlayer.level-1);
-            let totalXP = 37.5*(mPlayer.level * mPlayer.level) + 87.5*mPlayer.level - 125;
-            // Calculates percente to get to new level
-            let percent = 100 / mPlayer.xpForNextLevel * (mPlayer.xp-totalXP);
-            if (percent <= 25) {
-                $("#xp0").css("height", mapNumber(percent, 0, 25, 0, 100) + "%");
-                $("#xp1").css("width","0%");
-                $("#xp2").css("height","0%");
-                $("#xp3").css("width","0%");
-            } else if (percent <= 50) {
-                $("#xp0").css("height","100%");
-                $("#xp1").css("width", mapNumber(percent, 26, 50, 0, 100) + "%");
-                $("#xp2").css("height","0%");
-                $("#xp3").css("width","0%");
-            } else if (percent <= 75) {
-                $("#xp0").css("height","100%");
-                $("#xp1").css("width", "100%");
-                $("#xp2").css("height", mapNumber(percent, 51, 75, 0, 100) + "%");
-                $("#xp3").css("width","0%");
-            } else if (percent <= 100) {
-                $("#xp0").css("height","100%");
-                $("#xp1").css("width","100%");
-                $("#xp2").css("height","100%");
-                $("#xp3").css("width", mapNumber(percent, 76, 100, 0, 100) + "%");
-            }
-    
             // Calculates percent of remaining life
             let lifePercent = (mPlayer.life / mPlayer.maxLife) * 100+ "%";
 
@@ -175,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () =>
             //console.log(lifePercent);
             document.getElementById("healthBar").style.width = lifePercent;
             document.getElementById("level").innerHTML = mPlayer.level;
+            document.getElementById("xpCount").innerHTML = mPlayer.xp + " XP";
             updateGUI = false;
         }
     });
@@ -277,11 +252,19 @@ class App extends Engine
                     hitsEnemy.splice(i, 1);
                 }
             }
-            if (this.player.completedCombo) {
+            if (this.player.completedCombo !== "")
+            {
                 // Client sends completedCombo message to server and receives XP
-                socket.emit('completedCombo');
-                mPlayer.shoot(socket, hits, 2);
-                this.player.completedCombo = false;
+                if (this.player.completedCombo === "COMPLETED")
+                {
+                    socket.emit('completedCombo');
+                    mPlayer.shoot(socket, hits, 2);
+                }
+                else if (this.player.completedCombo === "FAILED")
+                {
+                    socket.emit('resetCombo');
+                }
+                this.player.completedCombo = "";
             }
             socket.emit('update', mPlayer, hits); // Send update message to server
         }
