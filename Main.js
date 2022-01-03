@@ -243,7 +243,7 @@ class App extends Engine
                 }
             }
             mPlayer.health(hitsEnemy);
-            if(mPlayer.currAnimation.startsWith("Hit")) // If this player is being hit
+            if(mPlayer.currAnimation == "Dies" || mPlayer.currAnimation.startsWith("Hit"))
             {
                 this.player.currAnimation = mPlayer.currAnimation; // Set the animation to the one it recieved from the server
                 this.player.resetAnimation = false;

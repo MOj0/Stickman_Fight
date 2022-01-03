@@ -81,10 +81,11 @@ export class MPlayer {
         // Set current animation to a random hit animation
         if(this.setHitAnimation)
             this.currAnimation = this.random < 0.5 ? "Hit_Center" : this.random < 0.75 ? "Hit_L" : "Hit_R";
-        else if(this.currAnimation.startsWith("Hit"))
+        else if(this.currAnimation == "Dies" || this.currAnimation.startsWith("Hit"))
             this.currAnimation = "";
 
         if (this.life <= 0) {
+            this.currAnimation = "Dies";
             console.log("You died...");
         }
 
