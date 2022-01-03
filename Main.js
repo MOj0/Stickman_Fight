@@ -124,9 +124,9 @@ document.addEventListener("DOMContentLoaded", () =>
             {
                 tmp = new Node(app.loader.playerOptions);
             }
-            
             tmp.name = otherPlayers[i].player;
             tmp.currAnimation = otherPlayers[i].currAnimation;
+            // console.log(tmp.currAnimation);
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 

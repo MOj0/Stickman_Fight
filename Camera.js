@@ -97,37 +97,48 @@ export class Camera extends Node
         mat4.rotateY(c.transform, c.transform, player.rotation[1] + Math.PI);
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
-        // Animations
-        if (player.currAnimation != "Tired")
+        // if(Math.random() < 0.3)
+        // {
+        //     console.log(player.currAnimation);
+        // }
+
+        // Reset animations
+        // if (player.currAnimation !== "Tired" && player.currAnimation !== "Punch_L")
+        if (player.resetAnimation)
         {
             player.currAnimation = isMoving ? "Run" : "Idle";
         }
         
         // Override the animation if player is attacking
-        if (player.currAnimation !== "Tired")
+        if (player.currAnimation !== "Tired" && player.currAnimation !== "Hit_Center")
         {
             if (this.keys["ArrowLeft"])
             {
                 player.currAnimation = "Punch_L";
+                player.resetAnimation = false;
                 mPlayer.hitWithDelay(0, 800);
             }
             if (this.keys["ArrowRight"])
             {
                 player.currAnimation = "Punch_R";
+                player.resetAnimation = false;
                 mPlayer.hitWithDelay(0, 800);
             }
             if (this.keys["ArrowUp"])
             {
                 player.currAnimation = "Kick_L";
+                player.resetAnimation = false;
                 mPlayer.hitWithDelay(0, 800);
             }
             if (this.keys["ArrowDown"])
             {
                 player.currAnimation = "Kick_R";
+                player.resetAnimation = false;
                 mPlayer.hitWithDelay(0, 800);
             }
         }
         mPlayer.currAnimation = player.currAnimation;
+        // mPlayer.currAnimation = "Hit_Center";
     }
 
     updateProjection()

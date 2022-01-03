@@ -20,13 +20,14 @@ export class Player extends Node
         this.friction = 1;
         this.acceleration = 100;
         this.completedCombo = false;
+        this.resetAnimation = true;
     }
 
     getAnimation(name = null)
     {
         for(const animation of this.animations)
         {
-            if(name == null && animation.name == this.currAnimation || name != null && animation.name == name)
+            if(name === null && animation.name === this.currAnimation || name != null && animation.name == name)
             {
                 return animation;
             }
@@ -38,6 +39,6 @@ export class Player extends Node
     {
         this.currAnimation = "Tired";
         // Reset animation after 1.5s
-        setTimeout(() => {this.currAnimation = "Idle";}, 1500);
+        setTimeout(() => this.currAnimation = "Idle", 1500);
     }
 }

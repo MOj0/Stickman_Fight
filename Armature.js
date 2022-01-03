@@ -83,6 +83,10 @@ export class Armature
     // Returns bone matrices for the current frame
     getBoneMatrices(animation, sinceStart)
     {
+        // if(this.currentAnimation)
+            // console.log(this.playerRef.currAnimation, this.currentAnimation.name);
+            
+        // If animation should restart (Idle and Run can restart at anytime)
         if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run")
         {
             this.currentAnimation = animation;
@@ -91,12 +95,16 @@ export class Armature
             // If the animation is Idle or Run, we don't need to start it from 0, since it loops anyways
             this.animationStart = this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run" ? 0 : sinceStart;
         }
+        else if(!this.animationCompleted && (this.currentAnimation.name.startsWith("Punch") || this.currentAnimation.name.startsWith("Kick")))
+        {
+            this.playerRef.currAnimation = this.currentAnimation.name;
+        }
 
         const flat = [];
         const nKeyframes = this.currentAnimation.nKeyframes;
 
         const delta = sinceStart - this.animationStart;
-        const maxMs = this.currentAnimation.maxKeyframe * 2000; // 3000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
+        const maxMs = this.currentAnimation.maxKeyframe * 2000; // 2000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
         const t = (delta % maxMs) / maxMs;
         const a = t * this.currentAnimation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
@@ -105,10 +113,11 @@ export class Armature
         if (currKeyframe >= this.currentAnimation.nKeyframes - 1)
         {
             this.animationCompleted = true;
+            this.playerRef.resetAnimation = true;
         }
 
         // Combos
-        if (this.animationCompleted && this.currentAnimation.name != "Idle" && this.currentAnimation.name != "Run" && this.currentAnimation.name != "Tired") // Player is attacking
+        if (this.animationCompleted && (this.currentAnimation.name.startsWith("Punch") || this.currentAnimation.name.startsWith("Kick"))) // Player is attacking
         {
             const currAttack = this.animationNameMap[this.currentAnimation.name];
             for (let i = this.currComboChain.length - 1; i >= 0; i--)
@@ -128,8 +137,10 @@ export class Armature
 
                 if (this.currComboChain.length == 0)
                 {
-                    this.playerRef.setAnimationTired();
+                    // this.playerRef.setAnimationTired();
+                    this.playerRef.currAnimation = "Tired";
                     this.currentAnimation = this.playerRef.getAnimation();
+                    this.playerRef.resetAnimation = false;
                     this.animationCompleted = false;
                 }
 

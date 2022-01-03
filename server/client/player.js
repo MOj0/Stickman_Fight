@@ -68,6 +68,7 @@ export class MPlayer {
                 this.lastHit = hitsEnemy[i].player;
                 console.log("Got hit by: " + this.lastHit + " damage taken: " + hitsEnemy[i].damage);
                 this.life -= hitsEnemy[i].damage; // Damage taken
+                this.currAnimation = "Hit_Center"; // FIXME: Display hit animation!
                 hitsEnemy.splice(i, 1); // Removes hits that hit the player
             }
         }
