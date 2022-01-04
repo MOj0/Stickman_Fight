@@ -23,17 +23,23 @@ export class Armature
             Kick_R: 3,
         };
 
+        const userAnimationNameMap = {
+            0: "Left",
+            1: "Up",
+            2: "Right",
+            3: "Down",
+        }
+
         this.mPlayerAnimationStartMap = {}; // Map containing start times of animations for mPlayers
 
-        this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]]; // TODO: Add more combos?
+        this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]];
+        this.comboNames = ["Punch_Uppercut", "Kick_Spin", "Kick_Jump"];
         this.comboIndex = 0;
         this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
 
         console.log("The combos are:");
-        for(const combo of this.allCombos)
-        {
-            console.log(combo.map(value => this.getKeyByValue(this.animationNameMap, value)));
-        }
+        for (const combo of this.allCombos)
+            console.log(combo.map(value => userAnimationNameMap[value]));
 
         for (const bone of this.bones)
         {
@@ -43,11 +49,6 @@ export class Armature
             bone.offsetMatrix = mat4.create(); // Final matrix to apply to the weighted vertices
         }
         this.setBindPose();
-    }
-
-    getKeyByValue(object, value)
-    {
-        return Object.keys(object).find(key => object[key] === value);
     }
 
     setBindPose()
@@ -77,6 +78,18 @@ export class Armature
         }
     }
 
+    arraysEqual(a, b)
+    {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length !== b.length) return false;
+
+        for (let i = 0; i < a.length; ++i)
+            if (a[i] !== b[i]) return false;
+
+        return true;
+    }
+
     // Returns bone matrices for the current frame
     getBoneMatricesCombos(animation, sinceStart)
     {
@@ -89,7 +102,7 @@ export class Armature
             // If the animation is Idle or Run, we don't need to start it from 0, since it loops anyways
             this.animationStart = this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run" ? 0 : sinceStart;
         }
-        else if(!this.animationCompleted && (this.currentAnimation.name.startsWith("Punch") || this.currentAnimation.name.startsWith("Kick")))
+        else if (!this.animationCompleted && (this.currentAnimation.name.startsWith("Punch") || this.currentAnimation.name.startsWith("Kick"))) // If player attacks, override the animation
         {
             this.playerRef.currAnimation = this.currentAnimation.name;
         }
@@ -98,7 +111,7 @@ export class Armature
         const nKeyframes = this.currentAnimation.nKeyframes;
 
         const delta = sinceStart - this.animationStart;
-        const maxMs = this.currentAnimation.maxKeyframe * 2000; // 2000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
+        const maxMs = this.currentAnimation.maxKeyframe * 1500; // sec -> ms; 1.5 times slower animations
         const t = (delta % maxMs) / maxMs;
         const a = t * this.currentAnimation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
@@ -117,7 +130,7 @@ export class Armature
             for (let i = this.currComboChain.length - 1; i >= 0; i--)
             {
                 const combo = this.currComboChain[i];
-                if (combo[this.comboIndex] != currAttack)
+                if (combo[this.comboIndex] != currAttack) // If currAttack is different than combo at current index, this combo is not achievable
                 {
                     this.currComboChain.splice(i, 1);
                 }
@@ -125,16 +138,32 @@ export class Armature
             // Either failed the combo or fully completed it
             if (this.currComboChain.length == 0 || this.currComboChain.length == 1 && this.comboIndex == this.currComboChain[0].length - 1)
             {
-                // console.log((this.currComboChain.length == 0 ? "FAILED" : "COMPLETED") + " COMBO");
-                this.playerRef.completedCombo = this.currComboChain.length == 0 ? "FAILED" : "COMPLETED";
-
-                if (this.currComboChain.length == 0)
+                if(!this.comboNames.includes(this.currentAnimation.name)) // If current animation is a complted combo
                 {
-                    // this.playerRef.setAnimationTired();
-                    this.playerRef.currAnimation = "Tired";
-                    this.currentAnimation = this.playerRef.getAnimation();
-                    this.playerRef.resetAnimation = false;
-                    this.animationCompleted = false;
+                    this.playerRef.completedCombo = this.currComboChain.length == 0 ? "FAILED" : "COMPLETED";
+
+                    if (this.currComboChain.length == 0) // Failed combo
+                    {
+                        this.playerRef.currAnimation = "Tired";
+                        this.currentAnimation = this.playerRef.getAnimation();
+                        this.playerRef.resetAnimation = false;
+                        this.animationCompleted = false;
+                    }
+                    else // Completed some combo
+                    {
+                        for (const index in this.allCombos)
+                        {
+                            if (this.arraysEqual(this.allCombos[index], this.currComboChain[0]))
+                            {
+                                this.playerRef.currAnimation = this.comboNames[index];
+                                this.currentAnimation = this.playerRef.getAnimation();
+                                this.playerRef.resetAnimation = false;
+                                this.animationCompleted = false;
+    
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 this.comboIndex = 0;
@@ -213,13 +242,13 @@ export class Armature
         const nKeyframes = animation.nKeyframes;
 
         // If animation is new or animation is completed
-        if(this.mPlayerAnimationStartMap[mPlayerName] == undefined || this.mPlayerAnimationStartMap[mPlayerName].animationCompleted)
+        if (this.mPlayerAnimationStartMap[mPlayerName] == undefined || this.mPlayerAnimationStartMap[mPlayerName].animationCompleted)
         {
-            this.mPlayerAnimationStartMap[mPlayerName] = {sinceStart: sinceStart, animationCompleted: false};
+            this.mPlayerAnimationStartMap[mPlayerName] = { sinceStart: sinceStart, animationCompleted: false };
         }
         const delta = sinceStart - this.mPlayerAnimationStartMap[mPlayerName].sinceStart;
 
-        const maxMs = animation.maxKeyframe * 2000; // 2000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
+        const maxMs = animation.maxKeyframe * 1500; // sec -> ms; 1.5 times slower animations
         const t = (delta % maxMs) / maxMs;
         const a = t * animation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor

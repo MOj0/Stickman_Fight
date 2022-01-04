@@ -36,7 +36,7 @@ export class MPlayer {
 
     shoot(socket, hits, hitType, isCompletedCombo = false) {
         if (this.life > 0) {
-            console.log("hitting");
+            // console.log("hitting");
             var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level);
 
             if (hitType === 2) { // Combo hits
