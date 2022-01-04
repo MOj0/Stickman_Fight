@@ -14,7 +14,7 @@ out vec2 vTexCoord;
 mat4 boneTransform() {
   mat4 ret;
 
-  // Weight normalization factor, only account for 2 bones -> NOTE: POTENTIAL PROBLEM
+  // Weight normalization factor
   float normfac = 1.0 / (aSWeights.x + aSWeights.y);
 
   // Weight1 * Bone1 + Weight2 * Bone2
