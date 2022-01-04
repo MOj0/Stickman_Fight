@@ -22,7 +22,9 @@ let hitsEnemy = [];
 let updateGUI = true;
 let otherPlayers = [];
 let otherPlayerNodes = [];
-const HIT_RANGE = 0.3;
+let otherPlayerIndicators = [];
+
+const HIT_RANGE = 0.5;
 
 function mapNumber(num, in_min, in_max, out_min, out_max)
 {
@@ -64,6 +66,8 @@ document.addEventListener("DOMContentLoaded", () =>
     });
     socket.on('updateXP', function(xp){
         mPlayer.xp = xp;
+        $("#xpCount").addClass("jump");
+        setTimeout(() => {$("#xpCount").removeClass("jump");}, 500);
         console.log("XP from server: "+xp);
     });
       socket.on('updateLevel', function(level){
@@ -140,15 +144,43 @@ document.addEventListener("DOMContentLoaded", () =>
             }
         }
         
-        if (mPlayer && updateGUI) {
+        if (mPlayer && updateGUI)
+        {
             // Calculates percent of remaining life
             let lifePercent = (mPlayer.life / mPlayer.maxLife) * 100+ "%";
 
             if (mPlayer.life <= 0) $("#overlay").show();
             //console.log(lifePercent);
-            document.getElementById("healthBar").style.width = lifePercent;
+            document.getElementById("playerHealthBar").style.width = lifePercent;
+            document.getElementById("playerHealthBar").style.backgroundColor = 
+                `rgba(${mapNumber((mPlayer.life / mPlayer.maxLife) * 100, 0, 100, 255, 0)},
+                      ${mapNumber((mPlayer.life / mPlayer.maxLife) * 100, 0, 100, 0, 255)}, 0)`;
+            
             document.getElementById("level").innerHTML = mPlayer.level;
             document.getElementById("xpCount").innerHTML = mPlayer.xp + " XP";
+
+
+            otherPlayerIndicators = [];
+            $("#otherPlayerIndicators").html("");
+            for (var i = 0; i < otherPlayers.length; i++)
+            {
+                if (Math.abs(mPlayer.x - otherPlayers[i].x) + Math.abs(mPlayer.y - otherPlayers[i].y) < 20)
+                {
+                    otherPlayerIndicators.push([otherPlayers[i].player, otherPlayers[i].life]);
+                }
+            }
+            for (var i = 0; i < otherPlayerIndicators.length; i++)
+            {
+                let playerName = otherPlayerIndicators[i][0]+"";
+                let playerLife = otherPlayerIndicators[i][1];
+                $("#otherPlayerIndicators").append(`<div id="outer-${playerName}" class="enemyHealthBarOutline"><div id="${playerName}" class="enemyHealthBar"></div></div>`);
+                lifePercent = (playerLife / 100) * 100+ "%";
+                document.getElementById(playerName).style.width = lifePercent;
+                document.getElementById("outer-"+playerName).style.top = 45 + i*80 + "%";
+                document.getElementById(playerName).style.backgroundColor = 
+                    `rgba(${mapNumber((playerLife / 100) * 100, 0, 100, 255, 0)},
+                          ${mapNumber((playerLife / 100) * 100, 0, 100, 0, 255)}, 0)`;
+            }
             updateGUI = false;
         }
     });
@@ -230,8 +262,8 @@ class App extends Engine
             mPlayer.y = this.player.translation[2];
             mPlayer.rotation = this.player.rotation;
 
-            mPlayer.mouseX = mPlayer.x - Math.sin(this.camera.rotation[1]);
-            mPlayer.mouseY = mPlayer.y - Math.cos(this.camera.rotation[1]);
+            mPlayer.mouseX = mPlayer.x + Math.sin(this.camera.rotation[1]);
+            mPlayer.mouseY = mPlayer.y + Math.cos(this.camera.rotation[1]);
            
             let tmp = this.scene.getNodeByName("Aim");
             for (var i = 0; i < hits.length; i++) {

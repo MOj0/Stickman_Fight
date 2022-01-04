@@ -116,25 +116,25 @@ export class Camera extends Node
             {
                 player.currAnimation = "Punch_L";
                 player.resetAnimation = false;
-                mPlayer.hitWithDelay(0, 800);
+                mPlayer.hitWithDelay(0, 600);
             }
             if (this.keys["ArrowRight"])
             {
                 player.currAnimation = "Punch_R";
                 player.resetAnimation = false;
-                mPlayer.hitWithDelay(0, 800);
+                mPlayer.hitWithDelay(0, 600);
             }
             if (this.keys["ArrowUp"])
             {
                 player.currAnimation = "Kick_L";
                 player.resetAnimation = false;
-                mPlayer.hitWithDelay(0, 800);
+                mPlayer.hitWithDelay(0, 600);
             }
             if (this.keys["ArrowDown"])
             {
                 player.currAnimation = "Kick_R";
                 player.resetAnimation = false;
-                mPlayer.hitWithDelay(0, 800);
+                mPlayer.hitWithDelay(0, 600);
             }
         }
         mPlayer.currAnimation = player.currAnimation;

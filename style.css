@@ -129,30 +129,51 @@ a.back:hover {
     box-sizing: border-box;
 }
 
-#healthBarOutline {
+.playerHealthBarOutline {
     position: absolute;
     bottom: 0;
-    left: 4.5%;
+    left: 5%;
     height: 50%;
-    width: 40%;
-    background-color: rgba(0, 0, 0, 0);
-    border: 2px solid #000;
+    width: 35%;
+    background-color: rgba(240, 240, 240, 0.5);
+    border: 1px solid #000;
+    box-shadow: 1px 3px 10px rgba(0,0,0, 1);
 
     transform: skew(-45deg);
     -webkit-transform: skew(-45deg);
 }
 
-#healthBar {
+.enemyHealthBarOutline {
+    position: absolute;
+    bottom: 0;
+    right: 5%;
+    height: 50%;
+    width: 35%;
+    background-color: rgba(240, 240, 240, 0.5);
+    border: 1px solid #000;
+    box-shadow: 1px 3px 10px rgba(0,0,0, 1);
+
+    transform: skew(45deg);
+    -webkit-transform: skew(45deg);
+}
+
+#playerHealthBar {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 100%;
-    width: 40%;
-    background-color: rgba(0, 255, 10, 0.8);
-    /*border:1px solid #000;*/
-    /*background:yellow;*/
-    /*transform: skew(-45deg);
-    -webkit-transform: skew(-45deg);*/
+    width: 0%;
+    background-color: rgba(0, 255, 0, 0.8);
+    transition: width 0.5s;
+}
+
+.enemyHealthBar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 100%;
+    width: 0%;
+    background-color: rgba(109, 31, 0, 0.8);
 }
 
 #xpContainer {
@@ -162,7 +183,7 @@ a.back:hover {
     transform: translate(-50%, 0);
     width: 30%;
     height: 400%;
-    /*background-color: rgba(0, 220, 220, 0.1);*/
+    /*background-color: rgba(0, 220, 220, 0.5);*/
 }
 
 #xp {
@@ -204,17 +225,31 @@ a.back:hover {
     font-weight: bold;
     font-size: 3.1vw;
 }
+
+@keyframes jump {
+    0% { top: 35%; }
+    50% { top: 30% }
+    100% { top: 35%; }
+}
+
+.jump {
+    animation: jump 0.5s;
+}
+
+
 #xpCount {
     position: absolute;
-    top: 0%;
-    left: 100%;
+    top: 35%;
+    left: 50%;
     transform: translate(-50%, 0);
     width: 50%;
     height: 50%;
     text-align: center;
     font-weight: bold;
     font-size: 2vw;
+    /*animation: jump 0.5s;*/
 }
+
 #overlay {
     display: none;
     position: absolute;

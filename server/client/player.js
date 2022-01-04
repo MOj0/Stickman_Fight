@@ -61,12 +61,12 @@ export class MPlayer {
         }
     }
     dist(x1, y1, x2, y2) {
-        return  Math.abs(x1 - x2) + Math.abs(y1 - y2);
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
     health(hitsEnemy) {
         for (var i = 0; i < hitsEnemy.length; i++) {
             if (hitsEnemy[i].player !== this.player &&
-                this.dist(hitsEnemy[i].x, hitsEnemy[i].y, this.x, this.y) <= 3) { // Distance between laser and player
+                this.dist(hitsEnemy[i].x, hitsEnemy[i].y, this.x, this.y) <= 5) { // Distance between laser and player
                 //console.log(hitsEnemy[i]);
                 this.lastHit = hitsEnemy[i].player;
                 console.log("Got hit by: " + this.lastHit + " damage taken: " + hitsEnemy[i].damage);
