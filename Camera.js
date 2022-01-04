@@ -70,7 +70,7 @@ export class Camera extends Node
         }
 
         // 5: update translation / Collision detection?
-        let canMove = true;
+        let canMove = player.currAnimation != "Dies";
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
         for (let otherPlayer of otherPlayers)
         {
@@ -97,20 +97,14 @@ export class Camera extends Node
         mat4.rotateY(c.transform, c.transform, player.rotation[1] + Math.PI);
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
-        // if(Math.random() < 0.3)
-        // {
-        //     console.log(player.currAnimation);
-        // }
-
         // Reset animations
-        // if (player.currAnimation !== "Tired" && player.currAnimation !== "Punch_L")
         if (player.resetAnimation)
         {
             player.currAnimation = isMoving ? "Run" : "Idle";
         }
         
         // If animation can be reset and player is attacking => override the animation
-        if (player.resetAnimation)
+        if (player.resetAnimation && !player.currAnimation.startsWith("Hit"))
         {
             if (this.keys["ArrowLeft"])
             {
