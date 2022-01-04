@@ -76,7 +76,7 @@ export class Armature
     }
 
     // Returns bone matrices for the current frame
-    getBoneMatrices(animation, sinceStart)
+    getBoneMatricesCombos(animation, sinceStart)
     {
         // If animation should restart (Idle and Run can restart at anytime)
         if (this.animationCompleted || this.currentAnimation == null || this.currentAnimation.name == "Idle" || this.currentAnimation.name == "Run")
@@ -205,7 +205,7 @@ export class Armature
     }
 
 
-    getBoneMatricesAnimation(animation, sinceStart)
+    getBoneMatricesAnimation(animation, sinceStart) // FIXME: Bug where Dies animation restarts if player is being hit
     {
         const flat = [];
         const nKeyframes = animation.nKeyframes;

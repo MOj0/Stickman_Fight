@@ -85,16 +85,17 @@ export class MPlayer {
             }
         }
 
-        // Set current animation to a random hit animation if player has not died yet
-        if(this.setHitAnimation && this.currAnimation != "Dies")
+       // Set current animation to a random hit animation if player has not died yet
+       if(this.setHitAnimation)
             this.currAnimation = this.random < 0.5 ? "Hit_Center" : this.random < 0.75 ? "Hit_L" : "Hit_R";
-        else if(!this.setHitAnimation && (this.currAnimation == "Dies" || this.currAnimation.startsWith("Hit")))
-            this.currAnimation = ""; // Reset only if currAnimation is Dies, or Hit...
-
+       
         if (this.life <= 0) {
             this.currAnimation = "Dies";
-            console.log("You died...");
+            // console.log("You died...");
         }
 
+        // Reset animations
+        if(!this.setHitAnimation && this.currAnimation.startsWith("Hit") || this.life > 0 && this.currAnimation == "Dies")
+            this.currAnimation = ""; // Reset only if currAnimation is "Dies", or "Hit"...
     }
 }

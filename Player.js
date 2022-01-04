@@ -39,7 +39,7 @@ export class Player extends Node
 
     getAnimationBoneMatrices(sinceStart)
     {
-        return this.armature.getBoneMatrices(this.getAnimation(), sinceStart);
+        return this.armature.getBoneMatricesCombos(this.getAnimation(), sinceStart);
     }
 
     setAnimationTired()
