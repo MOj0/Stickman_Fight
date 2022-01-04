@@ -94,7 +94,7 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.xpTimeout = true; // Enable only one XP add to run at a time
 }
 
-function Hit(player, x, y, targetX, targetY, hitType, comboMultiplier) {
+function Hit(player, x, y, targetX, targetY, hitType, comboMultiplier, isCompletedCombo) {
     this.player = player;
     this.x = x;
     this.y = y;
@@ -102,6 +102,7 @@ function Hit(player, x, y, targetX, targetY, hitType, comboMultiplier) {
     this.targetY = targetY;
     this.hitType = hitType;
     this.comboMultiplier = comboMultiplier;
+    this.isCompletedCombo = isCompletedCombo;
 
 
 }
@@ -221,7 +222,6 @@ io.sockets.on('connection',
                                 if (player.xpTimeout) {
                                     players[j].xp += 100;
                                     io.sockets.to(players[j].id).emit('updateXP', players[j].xp); // Update XP for the player who got XP
-                                    io.sockets.to(players[j].id).emit('updateLevel', queryXPLookupTable(players[j].xp)); // Update LEVEL in case the player leveled UP
                                     player.xpTimeout = false;
                                 }
                             }
@@ -246,14 +246,14 @@ io.sockets.on('connection',
         socket.on('shoot', function (playerHit) {
             var hit = new Hit(playerHit.player, playerHit.x,
                 playerHit.y, playerHit.targetX,
-                playerHit.targetY, playerHit.hitType, playerHit.comboMultiplier);
+                playerHit.targetY, playerHit.hitType, playerHit.comboMultiplier, playerHit.isCompletedCombo);
             hitsAll.push(hit);
             // console.log(playerHit, hit);
         });
 
-        socket.on('completedCombo', function () {
+        socket.on('completedCombo', function (giveTo) {
             for (var i = 0; i < players.length; i++) {
-                if (socket.id === players[i].id) {
+                if (giveTo === players[i].player) {
                     players[i].xp += 5;
                     players[i].level += 1;
                     io.sockets.to(players[i].id).emit('updateXP', players[i].xp);

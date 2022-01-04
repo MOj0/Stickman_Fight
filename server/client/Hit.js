@@ -1,5 +1,5 @@
 export class Hit {
-    constructor(igralec, x, y, targetX, targetY, hitType, comboMultiplier) {
+    constructor(igralec, x, y, targetX, targetY, hitType, comboMultiplier, isCompletedCombo = false) {
         this.player = igralec;
         this.x = x;
         this.y = y;
@@ -7,6 +7,7 @@ export class Hit {
         this.targetY = targetY;
         this.hitType = hitType;
         this.comboMultiplier = comboMultiplier;
+        this.isCompletedCombo = isCompletedCombo;
 
         this.pX; // Previous X position
         this.pY; // Previous Y position

@@ -34,13 +34,16 @@ export class MPlayer {
         this.i1;
     }
 
-    shoot(socket, hits, hitType) {
+    shoot(socket, hits, hitType, isCompletedCombo = false) {
         if (this.life > 0) {
             console.log("hitting");
             var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level);
 
             if (hitType === 2) { // Combo hits
-                for (let i = 0; i < 3; i++) {
+                var comboHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level, isCompletedCombo);
+                socket.emit('shoot', comboHit);
+                hits.push(comboHit);
+                for (let i = 0; i < 2; i++) {
                     socket.emit('shoot', thisHit);
                     hits.push(thisHit);
                 }            
@@ -63,13 +66,17 @@ export class MPlayer {
     dist(x1, y1, x2, y2) {
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
-    health(hitsEnemy) {
+    health(socket, hitsEnemy) {
         for (var i = 0; i < hitsEnemy.length; i++) {
             if (hitsEnemy[i].player !== this.player &&
                 this.dist(hitsEnemy[i].x, hitsEnemy[i].y, this.x, this.y) <= 5) { // Distance between laser and player
                 //console.log(hitsEnemy[i]);
                 this.lastHit = hitsEnemy[i].player;
                 console.log("Got hit by: " + this.lastHit + " damage taken: " + hitsEnemy[i].damage);
+                if (hitsEnemy[i].isCompletedCombo) {
+                    socket.emit('completedCombo', hitsEnemy[i].player+"");
+                    hitsEnemy[i].isCompletedCombo = false;
+                }
                 this.life -= hitsEnemy[i].damage; // Damage taken
                 this.setHitAnimation = true;
                 this.random = Math.random();

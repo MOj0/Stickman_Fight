@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () =>
         for (var i = 0; i < hitsAll.length; i++) {
             hitsEnemy.push(new Hit(hitsAll[i].player, hitsAll[i].x,
             hitsAll[i].y, hitsAll[i].targetX, hitsAll[i].targetY,
-            hitsAll[i].weaponType, hitsAll[i].comboMultiplier));
+            hitsAll[i].weaponType, hitsAll[i].comboMultiplier, hitsAll[i].isCompletedCombo));
         }
         // Receive and generate all other players
         otherPlayers.length = 0;
@@ -275,7 +275,7 @@ class App extends Engine
                     hits.splice(i, 1);
                 }
             }
-            mPlayer.health(hitsEnemy);
+            mPlayer.health(socket, hitsEnemy);
             if(mPlayer.currAnimation == "Dies" || mPlayer.currAnimation.startsWith("Hit"))
             {
                 this.player.currAnimation = mPlayer.currAnimation; // Set the animation to the one it recieved from the server
@@ -294,8 +294,8 @@ class App extends Engine
                 // Client sends completedCombo message to server and receives XP
                 if (this.player.completedCombo === "COMPLETED")
                 {
-                    socket.emit('completedCombo');
-                    mPlayer.shoot(socket, hits, 2);
+                    //socket.emit('completedCombo');
+                    mPlayer.shoot(socket, hits, 2, true);
                 }
                 else if (this.player.completedCombo === "FAILED")
                 {
