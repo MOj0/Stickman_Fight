@@ -1,5 +1,5 @@
 export class OtherPlayer {
-    constructor(id, player, x, y, life, currAnimation, rotation) {
+    constructor(id, player, x, y, life, currAnimation, rotation, color) {
         this.id = id;
         this.player = player;
         this.x = x;
@@ -8,5 +8,6 @@ export class OtherPlayer {
         this.life = life;
         this.rotation = rotation || [0, 0, 0];
         this.currAnimation = currAnimation || "Idle";
+        this.color = color;
     }
 }

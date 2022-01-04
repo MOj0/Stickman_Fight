@@ -101,10 +101,11 @@ document.addEventListener("DOMContentLoaded", () =>
         otherPlayerNodes.length = 0;
         for (var i = 0; i < players.length; i++) {
             if (mPlayer !== undefined && mPlayer.player !== players[i].player) {
+                console.log(players[i]);
                 otherPlayers.push(
                     new OtherPlayer(
                         players[i].id, players[i].player, players[i].x, players[i].y,
-                        players[i].life, players[i].currAnimation, players[i].rotation
+                        players[i].life, players[i].currAnimation, players[i].rotation, players[i].color // FIXME: players[i].color is undefined
                 ));
             }
         }
@@ -130,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () =>
             }
             tmp.name = otherPlayers[i].player;
             tmp.currAnimation = otherPlayers[i].currAnimation;
-            tmp.resetAnimation = false;
+            tmp.color = otherPlayers[i].color;
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 

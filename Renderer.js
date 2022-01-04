@@ -222,23 +222,22 @@ export class Renderer
         // Gets the bone positions for the current frame of animation
         const boneMatrices = player.getAnimationBoneMatrices(sinceStart);
 
-        // Debug
-        const identity = [
-            1., 0., 0., 0.,
-            0., 1., 0., 0.,
-            0., 0., 1., 0.,
-            0., 0., 0., 1.
-        ];
-        const nBones = boneMatrices.length / 16; // Every bone is 4x4 matrix
-        let identityBones = []; // NOTE: Send this to the shader to stop animation
-        for (let i = 0; i < nBones; i++)
-        {
-            identityBones[i] = identity;
-        }
-        identityBones = new Float32Array([].concat(...identityBones));
+        // // Debug
+        // const identity = [
+        //     1., 0., 0., 0.,
+        //     0., 1., 0., 0.,
+        //     0., 0., 1., 0.,
+        //     0., 0., 0., 1.
+        // ];
+        // const nBones = boneMatrices.length / 16; // Every bone is 4x4 matrix
+        // let identityBones = []; // NOTE: Send this to the shader to stop animation
+        // for (let i = 0; i < nBones; i++)
+        // {
+        //     identityBones[i] = identity;
+        // }
+        // identityBones = new Float32Array([].concat(...identityBones));
 
         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
-        // gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, identityBones); // Send the bone positions to the shader
 
         const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
         for (const node of scene.nodes)
@@ -262,9 +261,11 @@ export class Renderer
         mvpMatrix = mat4.clone(mvpMatrix);
         mat4.mul(mvpMatrix, mvpMatrix, node.transform);
 
+        const program = this.programs.shader;
+        gl.uniform4fv(program.uniforms.uColor, node.color ? node.color : [0, 0, 0, 0]); // Set node color or reset it (texture is used)
+
         if (node.mesh)
         {
-            const program = this.programs.shader;
             gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
             for (const primitive of node.mesh.primitives)
             {
@@ -273,7 +274,6 @@ export class Renderer
         }
         else if (node.model)
         {
-            const program = this.programs.shader;
             gl.bindVertexArray(node.model.vao);
             gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);

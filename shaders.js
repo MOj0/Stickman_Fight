@@ -46,13 +46,14 @@ const fragment = /*glsl*/`#version 300 es
 precision highp float;
 
 uniform highp sampler2D uTexture;
+uniform vec4 uColor;
 
 in vec2 vTexCoord;
 
 out vec4 oColor;
 
 void main() {
-  oColor = texture(uTexture, vTexCoord);
+  oColor = uColor == vec4(0, 0, 0, 0) ? texture(uTexture, vTexCoord) : uColor;
 }
 `;
 
