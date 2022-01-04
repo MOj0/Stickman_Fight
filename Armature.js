@@ -23,6 +23,8 @@ export class Armature
             Kick_R: 3,
         };
 
+        this.mPlayerAnimationStartMap = {}; // Map containing start times of animations for mPlayers
+
         this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]]; // TODO: Add more combos?
         this.comboIndex = 0;
         this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
@@ -205,22 +207,29 @@ export class Armature
     }
 
 
-    getBoneMatricesAnimation(animation, sinceStart) // FIXME: Bug where Dies animation restarts if player is being hit
+    getBoneMatricesMPlayer(mPlayerName, animation, sinceStart)
     {
         const flat = [];
         const nKeyframes = animation.nKeyframes;
 
-        const delta = sinceStart - this.animationStart;
+        // If animation is new or animation is completed
+        if(this.mPlayerAnimationStartMap[mPlayerName] == undefined || this.mPlayerAnimationStartMap[mPlayerName].animationCompleted)
+        {
+            this.mPlayerAnimationStartMap[mPlayerName] = {sinceStart: sinceStart, animationCompleted: false};
+        }
+        const delta = sinceStart - this.mPlayerAnimationStartMap[mPlayerName].sinceStart;
+
         const maxMs = animation.maxKeyframe * 2000; // 2000 = 1000 (sec -> ms)  *  2 (2 times slower animations)
         const t = (delta % maxMs) / maxMs;
         const a = t * animation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
         const lerp = a - currKeyframe;
 
-        // if (currKeyframe >= animation.nKeyframes - 1)
-        // {
-        //     this.animationCompleted = true;
-        // }
+        // If animation ended and mPlayerAnimationStartMap is defined
+        if (currKeyframe >= animation.nKeyframes - 1 && this.mPlayerAnimationStartMap[mPlayerName])
+        {
+            this.mPlayerAnimationStartMap[mPlayerName].animationCompleted = true;
+        }
 
         for (const i in this.bones)
         {
