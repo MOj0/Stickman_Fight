@@ -36,7 +36,7 @@ export class MPlayer {
 
     shoot(socket, hits, hitType) {
         if (this.life > 0) {
-            // console.log("hitting");
+            console.log("hitting");
             var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level);
 
             if (hitType === 2) { // Combo hits
@@ -78,11 +78,11 @@ export class MPlayer {
             }
         }
 
-        // Set current animation to a random hit animation
-        if(this.setHitAnimation)
+        // Set current animation to a random hit animation if player has not died yet
+        if(this.setHitAnimation && this.currAnimation != "Dies")
             this.currAnimation = this.random < 0.5 ? "Hit_Center" : this.random < 0.75 ? "Hit_L" : "Hit_R";
-        else if(this.currAnimation == "Dies" || this.currAnimation.startsWith("Hit"))
-            this.currAnimation = "";
+        else if(!this.setHitAnimation && (this.currAnimation == "Dies" || this.currAnimation.startsWith("Hit")))
+            this.currAnimation = ""; // Reset only if currAnimation is Dies, or Hit...
 
         if (this.life <= 0) {
             this.currAnimation = "Dies";

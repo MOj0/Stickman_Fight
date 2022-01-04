@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () =>
             }
             tmp.name = otherPlayers[i].player;
             tmp.currAnimation = otherPlayers[i].currAnimation;
+            tmp.resetAnimation = false;
             if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 
