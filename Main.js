@@ -101,11 +101,11 @@ document.addEventListener("DOMContentLoaded", () =>
         otherPlayerNodes.length = 0;
         for (var i = 0; i < players.length; i++) {
             if (mPlayer !== undefined && mPlayer.player !== players[i].player) {
-                console.log(players[i]);
                 otherPlayers.push(
                     new OtherPlayer(
                         players[i].id, players[i].player, players[i].x, players[i].y,
-                        players[i].life, players[i].currAnimation, players[i].rotation, players[i].color // FIXME: players[i].color is undefined
+                        players[i].life, players[i].currAnimation, players[i].rotation,
+                        players[i].color
                 ));
             }
         }
@@ -218,18 +218,6 @@ class App extends Engine
 
         mat4.fromScaling(this.floor.transform, [300, 1, 300]);
 
-        const cubeModel = this.createModel(CubeModel);
-        const cubeTexture = Engine.createTexture(gl, {
-            // options object
-            data: new Uint8Array([100, 255, 255, 255]),
-            width: 1,
-            height: 1
-        });
-        this.cube = new Node({
-            model:  cubeModel,
-            texture:  cubeTexture
-        });
-        this.cube.name = "Aim";
     
         await this.loader.load("./assets/models/stickman/stickman.gltf");
 
@@ -238,8 +226,6 @@ class App extends Engine
 
         this.player = this.scene.getNodeByName("Armature");
         this.player.translation = [mPlayer.x, 0, mPlayer.y]; // Sets player location to the one received from server
-
-        this.scene.addNode(this.cube);
 
         this.camera = new PerspectiveCamera(); // create Camera manually
         
@@ -267,11 +253,8 @@ class App extends Engine
             mPlayer.mouseX = mPlayer.x + Math.sin(this.camera.rotation[1]);
             mPlayer.mouseY = mPlayer.y + Math.cos(this.camera.rotation[1]);
            
-            let tmp = this.scene.getNodeByName("Aim");
             for (var i = 0; i < hits.length; i++) {
                 hits[i].move();
-                tmp.translation = [hits[i].x, 1, hits[i].y];
-                tmp.updateTransform();
                 if (HIT_RANGE > Math.abs(hits[i].x - hits[i].targetX) + Math.abs(hits[i].y - hits[i].targetY)) {
                     hits.splice(i, 1);
                 }

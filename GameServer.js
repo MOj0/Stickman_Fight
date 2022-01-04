@@ -92,6 +92,7 @@ function Player(id, uid, player, x, y, life, spawnID, maxLife, xp, level, invent
     this.currAnimation = "";
     this.timeout = true; // Enable only one updatePlayer to run at a time
     this.xpTimeout = true; // Enable only one XP add to run at a time
+    this.color = [];
 }
 
 function Hit(player, x, y, targetX, targetY, hitType, comboMultiplier, isCompletedCombo) {
@@ -210,6 +211,9 @@ io.sockets.on('connection',
                     player.inventory = data.inventory;
                     player.rotation = data.rotation;
                     player.currAnimation = data.currAnimation;
+                    player.color = data.color;
+                    // console.log(player.color);
+
 
                     if (player.life <= 0) {
                         // console.log("Last hit: " + player.lasthit);
