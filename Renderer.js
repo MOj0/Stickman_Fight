@@ -254,7 +254,7 @@ export class Renderer
         this.timeOld = sinceStart;
     }
 
-    renderNode(node, mvpMatrix)
+    renderNode(node, mvpMatrix, color=null)
     {
         const gl = this.gl;
 
@@ -262,7 +262,8 @@ export class Renderer
         mat4.mul(mvpMatrix, mvpMatrix, node.transform);
 
         const program = this.programs.shader;
-        gl.uniform4fv(program.uniforms.uColor, node.color ? node.color : [0, 0, 0, 0]); // Set node color or reset it (texture is used)
+
+        gl.uniform4fv(program.uniforms.uColor, color ? color : [0, 0, 0, 0]); // Set node color or reset it (texture is used in that case)
 
         if (node.mesh)
         {
@@ -286,7 +287,7 @@ export class Renderer
             {
                 continue;
             }
-            this.renderNode(child, mvpMatrix);
+            this.renderNode(child, mvpMatrix, node.color);
         }
     }
 

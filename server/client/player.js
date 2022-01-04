@@ -18,7 +18,7 @@ export class MPlayer {
         this.setHitAnimation = false;
 
         this.random = 0;
-        this.color = new Float32Array([Math.random(), Math.random(), Math.random(), 1]);
+        this.color = new Float32Array([Math.random(), Math.random() * 0.25, Math.random(), 1]);
 
         this.xpForNextLevel = 200;
 

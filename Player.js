@@ -23,9 +23,6 @@ export class Player extends Node
         this.resetAnimation = true;
 
         this.armature.playerRef = this;
-
-        this.color = new Float32Array([Math.random(), Math.random(), Math.random(), 1]);
-        this.children.forEach(child => child.color = this.color);
     }
 
     getAnimation(name = null)

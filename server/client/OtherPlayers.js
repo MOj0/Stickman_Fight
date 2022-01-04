@@ -8,6 +8,6 @@ export class OtherPlayer {
         this.life = life;
         this.rotation = rotation || [0, 0, 0];
         this.currAnimation = currAnimation || "Idle";
-        this.color = new Float32Array([color[0], color[1], color[2], 1]);;
+        this.color = new Float32Array([color[0], color[1], color[2], 1]);
     }
 }

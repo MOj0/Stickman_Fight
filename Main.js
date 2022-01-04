@@ -215,9 +215,7 @@ class App extends Engine
             model: floorModel,
             texture: greenTexture
         });
-
         mat4.fromScaling(this.floor.transform, [300, 1, 300]);
-
     
         await this.loader.load("./assets/models/stickman/stickman.gltf");
 
@@ -226,6 +224,7 @@ class App extends Engine
 
         this.player = this.scene.getNodeByName("Armature");
         this.player.translation = [mPlayer.x, 0, mPlayer.y]; // Sets player location to the one received from server
+        this.player.color = mPlayer.color; // Set color to the one recieved from server
 
         this.camera = new PerspectiveCamera(); // create Camera manually
         
