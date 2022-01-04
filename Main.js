@@ -182,7 +182,7 @@ class App extends Engine
             texture: greenTexture
         });
 
-        mat4.fromScaling(this.floor.transform, [30, 1, 30]);
+        mat4.fromScaling(this.floor.transform, [300, 1, 300]);
 
         const cubeModel = this.createModel(CubeModel);
         const cubeTexture = Engine.createTexture(gl, {
