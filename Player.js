@@ -16,7 +16,7 @@ export class Player extends Node
         super(options);
 
         this.velocity = vec3.set(vec3.create(), 0, 0, 0);
-        this.maxSpeed = 10;
+        this.maxSpeed = 23;
         this.friction = 1;
         this.acceleration = 100;
         this.completedCombo = false;

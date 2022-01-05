@@ -111,7 +111,7 @@ export class Armature
         const nKeyframes = this.currentAnimation.nKeyframes;
 
         const delta = sinceStart - this.animationStart;
-        const maxMs = this.currentAnimation.maxKeyframe * 1500; // sec -> ms; 1.5 times slower animations
+        const maxMs = this.currentAnimation.maxKeyframe * 1250; // sec -> ms; 1.25 times slower animations
         const t = (delta % maxMs) / maxMs;
         const a = t * this.currentAnimation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
@@ -248,7 +248,7 @@ export class Armature
         }
         const delta = sinceStart - this.mPlayerAnimationStartMap[mPlayerName].sinceStart;
 
-        const maxMs = animation.maxKeyframe * 1500; // sec -> ms; 1.5 times slower animations
+        const maxMs = animation.maxKeyframe * 1250; // sec -> ms; 1.25 times slower animations
         const t = (delta % maxMs) / maxMs;
         const a = t * animation.nKeyframes;
         const currKeyframe = ~~(a); // Fast Math.floor
