@@ -307,6 +307,17 @@ class App extends Engine
         }
     }
 
+    resize()
+    {
+        const w = this.canvas.clientWidth;
+        const h = this.canvas.clientHeight;
+        this.aspect = w / h;
+        if (this.camera) {
+            this.camera.aspect = this.aspect;
+            this.camera.updateProjection();
+        }
+    }
+
     pointerlockchangeHandler()
     {
         if (document.pointerLockElement === this.canvas && this.camera)

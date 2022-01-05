@@ -12,13 +12,6 @@ export class PerspectiveCamera extends Camera
         this.near = options.near || 1;
         this.far = options.far || Infinity;
 
-        this.updateMatrix();
-    }
-
-    updateMatrix()
-    {
-        mat4.perspective(this.projection,
-            this.fov, this.aspect,
-            this.near, this.far);
+        this.updateProjection();
     }
 }
