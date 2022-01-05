@@ -7,15 +7,6 @@
 
     <link rel="icon" type="image/png" sizes="32x32" href="icons/stickman-32x32.png">
     <link rel="stylesheet" type="text/css" href="style.css">
-
-
-    <!-- <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-    </style> -->
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
@@ -25,7 +16,6 @@
 </head>
 
 <body>
-    <!-- <canvas></canvas> -->
     <div class="fullscreen">
         <canvas>
         </canvas>
@@ -42,21 +32,24 @@
         </div>-->
 
         <div id="overlay">Wasted</div>
-
-
-        <!--<div id="wTypeOutline">
-          <div id="item0" class="inventoryItem activeItem"><div class="itemCounter" id="itemCount0">10</div><img src="client/resources/laser0.png">
-        </div><div id="item2" class="inventoryItem"><div class="itemCounter" id="itemCount2">10</div><img src="client/resources/laser1.png">
-      </div><div id="item3" class="inventoryItem"><div class="itemCounter" id="itemCount3">10</div><img src="client/resources/laser2.png">
-          </div>
-        </div>-->
-
         <div id="xpContainer">
             <div id="xp"></div>
             <div id="level" class="level">1</div>
             <div id="xpCount">0</div>
-
         </div>
+    </div>
+    <div id="controls">
+        <p><b>Controls</b></p>
+        <p>W A S D - to move</p>
+        <p>LEFT ARROW - left punch</p>
+        <p>RIGHT ARROW - right punch</p>
+        <p>UP ARROW - left kick</p>
+        <p>DOWN ARROW - right kick</p>
+
+        <p><b>Combos</b></p>
+        <p>LEFT RIGHT UP DOWN</p>
+        <p>LEFT LEFT DOWN</p>
+        <p>LEFT RIGHT LEFT UP DOWN</p>
     </div>
 </body>
 

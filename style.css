@@ -62,73 +62,6 @@ a.back:hover {
     user-select: none;
 }
 
-#inventoryOutline {
-    position: absolute;
-    bottom: -75%;
-    left: 8%;
-    height: 80%;
-    width: 35%;
-    background-color: rgba(0, 0, 0, 0);
-    /*border:2px solid #000;*/
-
-    /*transform: skew(45deg);
-    -webkit-transform: skew(45deg);*/
-    white-space: nowrap;
-    box-sizing: border-box;
-}
-
-.inventoryItem {
-    display: inline-block;
-    position: relative;
-    bottom: 0;
-    left: -7.5%;
-    height: 100%;
-    width: 20%;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid #000;
-    border-radius: 15%;
-    font-size: 1vw;
-
-    /*transform: skew(-45deg);
-    -webkit-transform: skew(-45deg);*/
-}
-
-.activeItem {
-    border: 1px solid #61697b;
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.itemCounter {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    z-index: 999;
-}
-
-.inventoryItem img {
-    position: absolute;
-    width: 60%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-}
-
-#wTypeOutline {
-    position: absolute;
-    bottom: -50%;
-    right: 0;
-    height: 95%;
-    width: 38%;
-    background-color: rgba(0, 0, 0, 0);
-    /*border:2px solid #000;*/
-
-    /*transform: skew(45deg);
-    -webkit-transform: skew(45deg);*/
-    white-space: nowrap;
-    box-sizing: border-box;
-}
-
 .playerHealthBarOutline {
     position: absolute;
     bottom: 0;
@@ -259,6 +192,21 @@ a.back:hover {
     text-align: center;
     font-size: 6vw;
 }
+
+#controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(240, 240, 240, 0.6);
+    padding: 10px;
+    border-top-right-radius: 10px;
+}
+
+#controls p {
+    line-height: 7px;
+    font-size: 14px;
+}
+
 
 @media screen and (min-width: 1280px) {
     .level {
