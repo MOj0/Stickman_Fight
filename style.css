@@ -203,17 +203,21 @@ a.back:hover {
 }
 
 #controls p {
-    line-height: 7px;
+    line-height: 6px;
     font-size: 14px;
+    text-transform: uppercase;
 }
 
+#controls img {
+    vertical-align: middle;
+    height: 28px;
+}
+#controls img.smaller{
+    height: 18px;
+}
 
 @media screen and (min-width: 1280px) {
     .level {
         font-size: 36px;
-    }
-
-    .inventoryItem {
-        font-size: 12px;
     }
 }

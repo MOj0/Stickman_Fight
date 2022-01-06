@@ -1,7 +1,7 @@
 import { Hit } from "./Hit.js";
 
 export class MPlayer {
-    constructor(player, x, y, life, maxLife, xp, level, spawn, inventory) {
+    constructor(player, x, y, life, maxLife, xp, level) {
         this.player = player;
         this.w = 1;
         this.h = 1;
@@ -11,8 +11,6 @@ export class MPlayer {
         this.maxLife = maxLife;
         this.xp = xp;
         this.level = level;
-        this.spawnID = spawn;
-        this.inventory = inventory;
         this.rotation = [];
         this.currAnimation = "";
         this.setHitAnimation = false;
@@ -35,31 +33,25 @@ export class MPlayer {
         this.i1;
     }
 
-    shoot(socket, hits, hitType, isCompletedCombo = false) {
+    hit(socket, hits, hitType, isCompletedCombo = false) {
         if (this.life > 0) {
             // console.log("hitting");
             var thisHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level);
 
             if (hitType === 2) { // Combo hits
                 var comboHit = new Hit(this.player, this.x, this.y, this.mouseX , this.mouseY, hitType, this.level, isCompletedCombo);
-                socket.emit('shoot', comboHit);
+                socket.emit('hit', comboHit);
                 hits.push(comboHit);
                 for (let i = 0; i < 2; i++) {
-                    socket.emit('shoot', thisHit);
+                    socket.emit('hit', thisHit);
                     hits.push(thisHit);
                 }            
             } else if (hitType === 0) {
-                if (this.inventory[0] > 0) {
-                    this.inventory[0] -= 1;
-                    socket.emit('shoot', thisHit);
-                    hits.push(thisHit);
-                }
+                socket.emit('hit', thisHit);
+                hits.push(thisHit);
             } else if (hitType === 1) { // Kick
-                if (this.inventory[1] > 0) {
-                    this.inventory[1] -= 1; 
-                    socket.emit('shoot', thisHit);
-                    hits.push(thisHit);
-                }
+                socket.emit('hit', thisHit);
+                hits.push(thisHit);
             }
             this.hitTimeout = false;
         }
