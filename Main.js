@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () =>
     socket.emit('start', uid, function(playerData){
         // Generating player
         mPlayer = new MPlayer(playerData.player, playerData.x, playerData.y, playerData.life,
-                              playerData.maxLife, playerData.xp, playerData.level, playerData.inventory);
+                              playerData.maxLife, playerData.xp, playerData.level);
 
         mPlayer.hitWithDelay = (hitType, delay) => {
             if (!mPlayer.hitTimeout) {

@@ -1,13 +1,6 @@
 var player;
 var players = [];
 var hitsAll = [];
-var spawns = [];
-var items = [];
-
-let inventory = { // Change values as needed
-    0: 100000, // Punches
-    1: 100000, // Kicks
-}
 
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -30,7 +23,7 @@ function updatePlayer(socketID, x, y, life) {
 
 }
 
-function Player(id, uid, player, x, y, life, maxLife, xp, level, inventory) {
+function Player(id, uid, player, x, y, life, maxLife, xp, level) {
     this.id = id; // Socket ID
     this.uid = uid;
     this.player = player;
@@ -43,7 +36,6 @@ function Player(id, uid, player, x, y, life, maxLife, xp, level, inventory) {
     this.maxLife = maxLife;
     this.xp = xp;
     this.level = level;
-    this.inventory = inventory;
     this.currAnimation = "";
     this.timeout = true; // Enable only one updatePlayer to run at a time
     this.xpTimeout = true; // Enable only one XP add to run at a time
@@ -109,7 +101,7 @@ io.sockets.on('connection',
             console.log(socket.id + " sent a START request with UID: " + uid);
             let playerName = "" + Math.random();
             // Creating new Player object with data from database
-            var player = new Player(socket.id, uid, playerName, random(-10, 25), random(-10, 25), 100, 100, 0, 1, inventory);
+            var player = new Player(socket.id, uid, playerName, random(-10, 25), random(-10, 25), 100, 100, 0, 1);
 
             data(player); // Data that is sent as a response(player object)
             players.push(player);
@@ -130,7 +122,6 @@ io.sockets.on('connection',
                     player.y = data.y;
                     player.life = data.life;
                     player.lastHit = data.lastHit;
-                    player.inventory = data.inventory;
                     player.rotation = data.rotation;
                     player.currAnimation = data.currAnimation;
                     player.color = data.color;

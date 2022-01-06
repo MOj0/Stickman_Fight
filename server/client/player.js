@@ -1,7 +1,7 @@
 import { Hit } from "./Hit.js";
 
 export class MPlayer {
-    constructor(player, x, y, life, maxLife, xp, level, spawn, inventory) {
+    constructor(player, x, y, life, maxLife, xp, level) {
         this.player = player;
         this.w = 1;
         this.h = 1;
@@ -11,7 +11,6 @@ export class MPlayer {
         this.maxLife = maxLife;
         this.xp = xp;
         this.level = level;
-        this.inventory = inventory;
         this.rotation = [];
         this.currAnimation = "";
         this.setHitAnimation = false;
@@ -48,17 +47,11 @@ export class MPlayer {
                     hits.push(thisHit);
                 }            
             } else if (hitType === 0) {
-                if (this.inventory[0] > 0) {
-                    this.inventory[0] -= 1;
-                    socket.emit('hit', thisHit);
-                    hits.push(thisHit);
-                }
+                socket.emit('hit', thisHit);
+                hits.push(thisHit);
             } else if (hitType === 1) { // Kick
-                if (this.inventory[1] > 0) {
-                    this.inventory[1] -= 1; 
-                    socket.emit('hit', thisHit);
-                    hits.push(thisHit);
-                }
+                socket.emit('hit', thisHit);
+                hits.push(thisHit);
             }
             this.hitTimeout = false;
         }
