@@ -4,9 +4,6 @@ export class Engine
     {
         this._update = this._update.bind(this);
 
-        // canvas.style.position = "fixed";
-        // canvas.width = window.innerWidth;
-        // canvas.height = window.innerHeight;
         this.canvas = canvas;
 
         this._initGL(glOptions);

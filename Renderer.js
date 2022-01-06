@@ -1,8 +1,6 @@
 import { vec3, mat4 } from './lib/gl-matrix-module.js';
-import { shaders } from "./shaders.js";
 import { Engine } from "./Engine.js";
-import { Armature } from './Armature.js';
-import { Player } from './Player.js';
+import { shaders } from "./shaders.js";
 
 export class Renderer
 {
@@ -133,9 +131,10 @@ export class Renderer
         // This is an application-scoped convention, matching the shader (layout location)
         const attributeNameToIndexMap = {
             POSITION: 0,
-            TEXCOORD_0: 1,
-            JOINTS_0: 2,
-            WEIGHTS_0: 3
+            NORMAL: 1,
+            TEXCOORD_0: 2,
+            JOINTS_0: 3,
+            WEIGHTS_0: 4
         };
 
         for (const name in primitive.attributes)
@@ -193,7 +192,7 @@ export class Renderer
         }
     }
 
-    render(scene, player, camera, sinceStart)
+    render(scene, player, camera, light, sinceStart)
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
@@ -203,6 +202,17 @@ export class Renderer
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
+
+        // Lighting
+        gl.uniform1f(program.uniforms.uAmbient, light.ambient);
+        gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
+        gl.uniform1f(program.uniforms.uSpecular, light.specular);
+        gl.uniform1f(program.uniforms.uShininess, light.shininess);
+        gl.uniform3fv(program.uniforms.uLightPosition, light.position);
+        const color = vec3.clone(light.color);
+        vec3.scale(color, color, 1.0 / 255.0);
+        gl.uniform3fv(program.uniforms.uLightColor, color);
+        gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
 
         const cameraMatrix = camera.getGlobalTransform();
         const playerMatrix = player.getGlobalTransform();
@@ -222,7 +232,7 @@ export class Renderer
         // Gets the bone positions for the current frame of animation
         const boneMatrices = player.getAnimationBoneMatrices(sinceStart);
 
-        // // Debug
+        // // Debug //TODO: Remove?
         // const identity = [
         //     1., 0., 0., 0.,
         //     0., 1., 0., 0.,
@@ -239,7 +249,9 @@ export class Renderer
 
         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
 
-        const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
+
+        const viewModelMatrix = mat4.copy(mat4.create(), viewMatrix);
         for (const node of scene.nodes)
         {
             if (node.name && node.name.startsWith("0.")) // Another player
@@ -248,18 +260,18 @@ export class Renderer
                 const boneMatrices = player.armature.getBoneMatricesMPlayer(node.name, anotherPlayerAnimation, sinceStart);
                 gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
             }
-            this.renderNode(node, mvpMatrix);
+            this.renderNode(node, viewModelMatrix);
         }
 
         this.timeOld = sinceStart;
     }
 
-    renderNode(node, mvpMatrix, color=null)
+    renderNode(node, viewModelMatrix, color = null)
     {
         const gl = this.gl;
 
-        mvpMatrix = mat4.clone(mvpMatrix);
-        mat4.mul(mvpMatrix, mvpMatrix, node.transform);
+        viewModelMatrix = mat4.clone(viewModelMatrix);
+        mat4.mul(viewModelMatrix, viewModelMatrix, node.transform);
 
         const program = this.programs.shader;
 
@@ -267,7 +279,7 @@ export class Renderer
 
         if (node.mesh)
         {
-            gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
+            gl.uniformMatrix4fv(program.uniforms.uViewModel, false, viewModelMatrix);
             for (const primitive of node.mesh.primitives)
             {
                 this.renderPrimitive(primitive);
@@ -276,18 +288,18 @@ export class Renderer
         else if (node.model)
         {
             gl.bindVertexArray(node.model.vao);
-            gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
+            gl.uniformMatrix4fv(program.uniforms.uViewModel, false, viewModelMatrix);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children)
         {
-            if (child.isJoint || (child.name && child.name == "Camera"))
+            if (child.isJoint)
             {
                 continue;
             }
-            this.renderNode(child, mvpMatrix, node.color);
+            this.renderNode(child, viewModelMatrix, node.color);
         }
     }
 

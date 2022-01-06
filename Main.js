@@ -1,17 +1,17 @@
 "use strict";
 
+import { GUI } from './lib/dat.gui.module.js';
 import { mat4 } from './lib/gl-matrix-module.js';
 import { Engine } from './Engine.js';
 import { Node } from './Node.js';
 import * as FloorModel from "./floor.js";
 import { PerspectiveCamera } from './PerspectiveCamera.js';
-import * as CubeModel from "./cube.js";
 import { Renderer } from "./Renderer.js";
 import { MPlayer } from "./server/client/player.js";
 import { OtherPlayer } from "./server/client/OtherPlayers.js";
 import { Hit } from "./server/client/Hit.js";
 import { GLTFLoader } from "./GLTFLoader.js";
-import { Player } from './Player.js';
+import { Light } from './Light.js';
 
 
 let socket;
@@ -110,29 +110,19 @@ document.addEventListener("DOMContentLoaded", () =>
             }
         }
         
-        const cubeModel = app.createModel(CubeModel);
-        const cubeTexture = Engine.createTexture(app.gl, {
-            // options object
-            data: new Uint8Array([100, 100, 255, 255]),
-            width: 1,
-            height: 1
-        });
- 
-        for (var i = 0; i < otherPlayers.length; i++) {
-            if (app.scene !== undefined) app.removeNodeByName(app.scene.nodes, otherPlayers[i].player);
-
-            let tmp = new Node({
-                model:  cubeModel,
-                texture:  cubeTexture
-            });
-            if(app.loader !== undefined)
+        if(app.loader !== undefined)
+        {
+            for (var i = 0; i < otherPlayers.length; i++)
             {
-                tmp = new Node(app.loader.playerOptions);
+                if (app.scene !== undefined) app.removeNodeByName(app.scene.nodes, otherPlayers[i].player);
+    
+                const tmp = new Node(app.loader.playerOptions);
+                tmp.name = otherPlayers[i].player;
+                tmp.currAnimation = otherPlayers[i].currAnimation;
+                tmp.color = otherPlayers[i].color;
+
+                if (app.scene !== undefined) app.scene.addNode(tmp);
             }
-            tmp.name = otherPlayers[i].player;
-            tmp.currAnimation = otherPlayers[i].currAnimation;
-            tmp.color = otherPlayers[i].color;
-            if (app.scene !== undefined) app.scene.addNode(tmp);
         }
 
         if (app.scene !== undefined) {
@@ -187,7 +177,16 @@ document.addEventListener("DOMContentLoaded", () =>
         }
     });
 
-
+    // Debug
+    const gui = new GUI();
+    gui.add(app.light, 'ambient', 0.0, 1.0);
+    gui.add(app.light, 'diffuse', 0.0, 1.0);
+    gui.add(app.light, 'specular', 0.0, 1.0);
+    gui.add(app.light, 'shininess', 0.0, 1000.0);
+    gui.addColor(app.light, 'color');
+    for (let i = 0; i < 3; i++) {
+        gui.add(app.light.position, i, -100.0, 100.0).name('position.' + String.fromCharCode('x'.charCodeAt(0) + i));
+    }
 });
 
 class App extends Engine
@@ -203,6 +202,7 @@ class App extends Engine
         document.addEventListener('pointerlockchange', this.pointerlockchangeHandler);
         document.addEventListener('mousedown', this.mousedownHandler);
 
+        const FloorModel = this.createFloorModel(10, 10);
         const floorModel = this.createModel(FloorModel);
         const greenTexture = Engine.createTexture(gl, {
             data: new Uint8Array([0, 255, 0, 255]),
@@ -216,18 +216,21 @@ class App extends Engine
             texture: greenTexture
         });
         mat4.fromScaling(this.floor.transform, [300, 1, 300]);
-    
+
+        this.light = new Light();
+
         await this.loader.load("./assets/models/stickman/stickman.gltf");
 
         this.scene = await this.loader.loadScene(this.loader.defaultScene);
         this.scene.addNode(this.floor);
+        this.scene.addNode(this.light);
 
         this.player = this.scene.getNodeByName("Armature");
         this.player.translation = [mPlayer.x, 0, mPlayer.y]; // Sets player location to the one received from server
         this.player.color = mPlayer.color; // Set color to the one recieved from server
 
         this.camera = new PerspectiveCamera(); // create Camera manually
-        
+
         // All nodes are loaded
         console.log("Nodes in the scene", this.scene.nodes);
 
@@ -303,7 +306,7 @@ class App extends Engine
     {
         if (this.renderer && this.camera)
         {
-            this.renderer.render(this.scene, this.player, this.camera, sinceStart);
+            this.renderer.render(this.scene, this.player, this.camera, this.light, sinceStart);
         }
     }
 
@@ -358,18 +361,63 @@ class App extends Engine
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, model.vertices, gl.STATIC_DRAW);
 
+        const indices = model.indices.length;
         const indexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, model.indices, gl.STATIC_DRAW);
 
         gl.enableVertexAttribArray(0);
         gl.enableVertexAttribArray(1);
+        gl.enableVertexAttribArray(2);
 
-        gl.vertexAttribPointer(0, 4, gl.FLOAT, false, 24, 0);
-        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 24, 16);
+        gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
+        gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 32, 12);
+        gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 32, 24);
 
-        const numTriangles = model.indices.length;
-        return { vao, indices: numTriangles };
+        return { vao, indices };
+    }
+
+    createFloorModel(width, height) 
+    {
+        let vertices = [];
+        for (let j = 0; j <= height; j++) {
+            for (let i = 0; i <= width; i++) {
+                const x = i - width / 2;
+                const z = j - height / 2;
+                const y = Math.random() / 4;
+
+                // position
+                vertices.push(x);
+                vertices.push(y);
+                vertices.push(z);
+
+                // normal
+                vertices.push(0);
+                vertices.push(1);
+                vertices.push(0);
+
+                // texcoords
+                vertices.push(x);
+                vertices.push(z);
+            }
+        }
+
+        let indices = [];
+        for (let j = 0; j < height; j++) {
+            for (let i = 0; i < width; i++) {
+                indices.push(i + j * (width + 1));
+                indices.push(i + (j + 1) * (width + 1));
+                indices.push((i + 1) + j * (width + 1));
+                indices.push((i + 1) + j * (width + 1));
+                indices.push(i + (j + 1) * (width + 1));
+                indices.push((i + 1) + (j + 1) * (width + 1));
+            }
+        }
+
+        vertices = new Float32Array(vertices);
+        indices = new Uint16Array(indices);
+
+        return { vertices, indices };
     }
 
 
