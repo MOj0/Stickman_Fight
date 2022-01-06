@@ -47,12 +47,12 @@ document.addEventListener("DOMContentLoaded", () =>
     socket.emit('start', uid, function(playerData){
         // Generating player
         mPlayer = new MPlayer(playerData.player, playerData.x, playerData.y, playerData.life,
-                            playerData.maxLife, playerData.xp, playerData.level,
-                            playerData.spawnID, playerData.inventory);
+                              playerData.maxLife, playerData.xp, playerData.level, playerData.inventory);
+
         mPlayer.hitWithDelay = (hitType, delay) => {
             if (!mPlayer.hitTimeout) {
                 setTimeout(() => {
-                    mPlayer.shoot(socket, hits, hitType);
+                    mPlayer.hit(socket, hits, hitType);
                 }, delay);
                 mPlayer.hitTimeout = true;
             }
@@ -90,11 +90,12 @@ document.addEventListener("DOMContentLoaded", () =>
         console.log("Removing player: "+playerName);
     });
     socket.on('heartbeat',
-        function(players, hitsAll, spawnsAll, itemsAll){
+        function(players, hitsAll){
         for (var i = 0; i < hitsAll.length; i++) {
-            hitsEnemy.push(new Hit(hitsAll[i].player, hitsAll[i].x,
-            hitsAll[i].y, hitsAll[i].targetX, hitsAll[i].targetY,
-            hitsAll[i].weaponType, hitsAll[i].comboMultiplier, hitsAll[i].isCompletedCombo));
+            hitsEnemy.push(new Hit(hitsAll[i].player, hitsAll[i].x, hitsAll[i].y,
+                hitsAll[i].targetX, hitsAll[i].targetY, hitsAll[i].weaponType,
+                hitsAll[i].comboMultiplier, hitsAll[i].isCompletedCombo)
+            );
         }
         // Receive and generate all other players
         otherPlayers.length = 0;
@@ -105,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () =>
                     new OtherPlayer(
                         players[i].id, players[i].player, players[i].x, players[i].y,
                         players[i].life, players[i].currAnimation, players[i].rotation,
-                        players[i].color
-                ));
+                        players[i].color)
+                    );
             }
         }
         
@@ -278,7 +279,7 @@ class App extends Engine
                 if (this.player.completedCombo === "COMPLETED")
                 {
                     //socket.emit('completedCombo');
-                    mPlayer.shoot(socket, hits, 2, true);
+                    mPlayer.hit(socket, hits, 2, true);
                 }
                 else if (this.player.completedCombo === "FAILED")
                 {
