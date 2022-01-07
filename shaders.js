@@ -103,7 +103,6 @@ void main()
     vec3 E = normalize(vEye);
     vec3 R = normalize(reflect(-L, N));
 
-    float lambert = max(0.0, dot(L, N));
     float phong = pow(max(0.0, dot(E, R)), uShininess);
 
     float ambient = uAmbient;
