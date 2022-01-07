@@ -203,17 +203,6 @@ export class Renderer
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
-        // Lighting
-        gl.uniform1f(program.uniforms.uAmbient, light.ambient);
-        gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
-        gl.uniform1f(program.uniforms.uSpecular, light.specular);
-        gl.uniform1f(program.uniforms.uShininess, light.shininess);
-        gl.uniform3fv(program.uniforms.uLightPosition, light.position);
-        const color = vec3.clone(light.color);
-        vec3.scale(color, color, 1.0 / 255.0);
-        gl.uniform3fv(program.uniforms.uLightColor, color);
-        gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
-
         const cameraMatrix = camera.getGlobalTransform();
         const playerMatrix = player.getGlobalTransform();
 
@@ -251,14 +240,31 @@ export class Renderer
 
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
+        const lightVMatrix = mat4.mul(mat4.create(), viewMatrix, light.transform);
+        // Lighting
+        gl.uniform1f(program.uniforms.uAmbient, light.ambient);
+        gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
+        gl.uniform1f(program.uniforms.uSpecular, light.specular);
+        gl.uniform1f(program.uniforms.uShininess, light.shininess);
+        gl.uniform3fv(program.uniforms.uLightPosition, [lightVMatrix[12], lightVMatrix[13], lightVMatrix[14]]);
+        const color = vec3.clone(light.color);
+        vec3.scale(color, color, 1.0 / 255.0);
+        gl.uniform3fv(program.uniforms.uLightColor, color);
+        gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
+
         const viewModelMatrix = mat4.copy(mat4.create(), viewMatrix);
         for (const node of scene.nodes)
         {
+            gl.uniform1f(program.uniforms.uUseLight, true); // Use light by default
             if (node.name && node.name.startsWith("0.")) // Another player
             {
                 const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
                 const boneMatrices = player.armature.getBoneMatricesMPlayer(node.name, anotherPlayerAnimation, sinceStart);
                 gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+            }
+            else if(node.name == "Sphere")
+            {
+                gl.uniform1f(program.uniforms.uUseLight, false); // For the skyball we don't want to use lighting
             }
             this.renderNode(node, viewModelMatrix);
         }

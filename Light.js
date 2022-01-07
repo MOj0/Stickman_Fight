@@ -8,13 +8,15 @@ export class Light extends Node
 
         Object.assign(this, {
             name: "Light",
-            position: [-4, 7, 0],
-            ambient: 0.7,
+            translation: [0, 10, 0],
+            ambient: 3,
             diffuse: 1,
             specular: 1,
-            shininess: 5,
+            shininess: 20,
             color: [255, 255, 255],
-            attenuatuion: [1.0, 0, 0.02]
+            attenuatuion: [1, 0, 0.00008]
         });
+
+        this.updateTransform();
     }
 }

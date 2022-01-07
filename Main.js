@@ -180,14 +180,15 @@ document.addEventListener("DOMContentLoaded", () =>
 
     // Debug
     const gui = new GUI();
-    gui.add(app.light, 'ambient', 0.0, 1.0);
+    gui.add(app.light, 'ambient', 0.0, 100.0);
     gui.add(app.light, 'diffuse', 0.0, 1.0);
     gui.add(app.light, 'specular', 0.0, 1.0);
     gui.add(app.light, 'shininess', 0.0, 1000.0);
     gui.addColor(app.light, 'color');
     for (let i = 0; i < 3; i++) {
-        gui.add(app.light.position, i, -100.0, 100.0).name('position.' + String.fromCharCode('x'.charCodeAt(0) + i));
+        gui.add(app.light.translation, i, -100.0, 100.0).name('translation.' + String.fromCharCode('x'.charCodeAt(0) + i));
     }
+    gui.add(app.light.attenuatuion, 2, -5.0, 100.0).name('attenuatuion');
 });
 
 class App extends Engine
@@ -293,6 +294,10 @@ class App extends Engine
             socket.emit('update', mPlayer, hits); // Send update message to server
         }
 
+        if(this.light)
+        {
+            this.light.updateTransform();
+        }
 
         if (this.camera)
         {

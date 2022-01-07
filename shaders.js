@@ -43,7 +43,7 @@ void main()
         0., 0., 0., 1.
     );
   vec3 vertexPosition = (uViewModel * bt * vec4(aPosition, 1)).xyz; // Bone matrix multiplication is here!
-  vec3 lightPosition = (uViewModel * vec4(uLightPosition, 1)).xyz;
+  vec3 lightPosition = (vec4(uLightPosition, 1)).xyz;
 
   vEye = -vertexPosition;
   vLight = lightPosition - vertexPosition;
@@ -67,8 +67,9 @@ precision highp float;
 
 uniform highp sampler2D uTexture;
 
-uniform vec3 uLightColor;
+uniform bool uUseLight;
 
+uniform vec3 uLightColor;
 uniform float uAmbient;
 uniform float uDiffuse;
 uniform float uSpecular;
@@ -87,29 +88,28 @@ out vec4 oColor;
 
 void main()
 {
-  vec3 N = normalize(vNormal);
-  vec3 L = normalize(vLight);
-  vec3 E = normalize(vEye);
-  vec3 R = normalize(reflect(-L, N));
-
-  float lambert = max(0.0, dot(L, N));
-  float phong = pow(max(0.0, dot(E, R)), uShininess);
-
-  float ambient = uAmbient;
-
-  // Diffuse smooth calc
-  float diffuse = dot(vNormal, vLight);
-  float delta = fwidth(diffuse) * 5.0;
-  float diffuseSmooth = smoothstep(0.0, delta, diffuse);
-
-  float specular = uSpecular * phong;
-
-
-  vec3 lightVec = (ambient + diffuseSmooth + specular) * vAttenuation * uLightColor;
-  vec4 light = vec4(lightVec, 1);
-  if(light[0] <= 0.2 && light[1] <= 0.2 && light[2] <= 0.2)
+  vec4 light = vec4(1, 1, 1, 1);
+  if(uUseLight)
   {
-    light = vec4(0.5, 0.5, 0.5, 1);
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(vLight);
+    vec3 E = normalize(vEye);
+    vec3 R = normalize(reflect(-L, N));
+
+    float lambert = max(0.0, dot(L, N));
+    float phong = pow(max(0.0, dot(E, R)), uShininess);
+
+    float ambient = uAmbient;
+
+    // Diffuse smooth calc
+    float diffuse = dot(vNormal, vLight);
+    float delta = fwidth(diffuse) * 5.0;
+    float diffuseSmooth = smoothstep(0.0, delta, diffuse);
+
+    float specular = uSpecular * phong;
+
+    vec3 lightVec = (ambient + diffuseSmooth + specular) * vAttenuation * uLightColor;
+    light = vec4(lightVec, 1);
   }
 
   oColor = (uColor == vec4(0, 0, 0, 0) ? texture(uTexture, vTexCoord) : uColor) * light;
