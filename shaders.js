@@ -5,7 +5,7 @@ uniform mat4 uViewModel;
 
 uniform mat4 uBones[42];
 
-uniform bool uDrawOutlineV;
+uniform bool uDrawOutline;
 
 uniform vec3 uLightPosition;
 uniform vec3 uLightAttenuation;
@@ -55,7 +55,7 @@ void main()
   float d = distance(vertexPosition, lightPosition);
   vAttenuation = 1.0 / dot(uLightAttenuation, vec3(1, d, d * d));
   
-  if(uDrawOutlineV)
+  if(uDrawOutline)
   {
     vec3 normal = normalize(aNormal) * 0.1; // 0.1 - Outline size TODO: Set as uniform
     vec3 pos = (vertexPosition * 2.0 + normal); // vertexPosition has to be multiplied by a large number (workaround for empty space)
@@ -74,7 +74,7 @@ precision highp float;
 uniform highp sampler2D uTexture;
 
 uniform bool uUseLight;
-uniform bool uDrawOutlineF;
+uniform bool uDrawOutline;
 
 uniform vec3 uLightColor;
 uniform float uAmbient;
@@ -119,7 +119,7 @@ void main()
     light = vec4(lightVec, 1);
   }
 
-  if(uDrawOutlineF)
+  if(uDrawOutline)
   {
     oColor = vec4(0, 0, 0, 1);
   }
