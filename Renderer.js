@@ -15,7 +15,8 @@ export class Renderer
 
         gl.clearColor(0.45, 0.7, 1, 1);
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
+        // gl.enable(gl.STENCIL_TEST);
+        // gl.enable(gl.CULL_FACE);
     }
 
     prepareBufferView(bufferView)
@@ -199,7 +200,9 @@ export class Renderer
         const program = this.programs.shader;
 
         gl.useProgram(program.program);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
+        gl.enable(gl.STENCIL_TEST);  // turn on the stencil
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
@@ -240,8 +243,8 @@ export class Renderer
 
         gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
 
-        const lightVMatrix = mat4.mul(mat4.create(), viewMatrix, light.transform);
         // Lighting
+        const lightVMatrix = mat4.mul(mat4.create(), viewMatrix, light.transform);
         gl.uniform1f(program.uniforms.uAmbient, light.ambient);
         gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
         gl.uniform1f(program.uniforms.uSpecular, light.specular);
@@ -256,17 +259,56 @@ export class Renderer
         for (const node of scene.nodes)
         {
             gl.uniform1f(program.uniforms.uUseLight, true); // Use light by default
-            if (node.name && node.name.startsWith("0.")) // Another player
+            gl.uniform1f(program.uniforms.uDrawOutlineV, false); // Don't draw outline by default
+            gl.uniform1f(program.uniforms.uDrawOutlineF, false); // Don't draw outline by default
+
+            if(node.name && node.name == "Armature")
             {
-                const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
-                const boneMatrices = player.armature.getBoneMatricesMPlayer(node.name, anotherPlayerAnimation, sinceStart);
-                gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+                gl.stencilFunc(
+                    gl.ALWAYS,    // the test
+                    1,            // reference value
+                    0xFF,         // mask
+                 );
+                // Set it so we replace with the reference value (1)
+                gl.stencilOp(
+                   gl.KEEP,     // what to do if the stencil test fails
+                   gl.KEEP,     // what to do if the depth test fails
+                   gl.REPLACE,  // what to do if both tests pass
+                );
+                this.renderNode(node, viewModelMatrix); // Draw stickman normally
+
+                // Set the test that the stencil must = 0
+                gl.stencilFunc(
+                    gl.EQUAL,     // the test
+                    0,            // reference value
+                    0xFF,         // mask
+                );
+                // don't change the stencil buffer on draw
+                gl.stencilOp(
+                    gl.KEEP,     // what to do if the stencil test fails
+                    gl.KEEP,     // what to do if the depth test fails
+                    gl.KEEP,  // what to do if both tests pass
+                );
+
+                // Draw outline of stickman
+                gl.uniform1f(program.uniforms.uDrawOutlineV, true);
+                gl.uniform1f(program.uniforms.uDrawOutlineF, true);
+                this.renderNode(node, viewModelMatrix, [0, 0, 0, 1]);
             }
-            else if(node.name == "Sphere")
-            {
-                gl.uniform1f(program.uniforms.uUseLight, false); // For the skyball we don't want to use lighting
-            }
-            this.renderNode(node, viewModelMatrix);
+            // else // TODO: Also draw outline for other stickmen
+            // {
+            //     if (node.name && node.name.startsWith("0.")) // Another player
+            //     {
+            //         const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
+            //         const boneMatrices = player.armature.getBoneMatricesMPlayer(node.name, anotherPlayerAnimation, sinceStart);
+            //         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+            //     }
+            //     else if(node.name == "Sphere")
+            //     {
+            //         gl.uniform1f(program.uniforms.uUseLight, false); // For the skyball we don't want to use lighting
+            //     }
+            //     this.renderNode(node, viewModelMatrix);
+            // }
         }
 
         this.timeOld = sinceStart;
@@ -301,11 +343,8 @@ export class Renderer
 
         for (const child of node.children)
         {
-            if (child.isJoint)
-            {
-                continue;
-            }
-            this.renderNode(child, viewModelMatrix, node.color);
+            if (child.isJoint) continue;
+            this.renderNode(child, viewModelMatrix, color ? color : node.color);
         }
     }
 

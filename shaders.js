@@ -5,6 +5,8 @@ uniform mat4 uViewModel;
 
 uniform mat4 uBones[42];
 
+uniform bool uDrawOutlineV;
+
 uniform vec3 uLightPosition;
 uniform vec3 uLightAttenuation;
 
@@ -52,13 +54,17 @@ void main()
 
   float d = distance(vertexPosition, lightPosition);
   vAttenuation = 1.0 / dot(uLightAttenuation, vec3(1, d, d * d));
-
-  // TODO: Implement outlining
-  // vec3 normal = normalize(aNormal) * 0.01; // 0.01 - Outline size TODO: Set as uniform
-  // vec3 pos = vertexPosition + normal;
-  // gl_Position = uProjection * vec4(pos, 1);
-
-  gl_Position = uProjection * vec4(vertexPosition, 1);
+  
+  if(uDrawOutlineV)
+  {
+    vec3 normal = normalize(aNormal) * 0.1; // 0.1 - Outline size TODO: Set as uniform
+    vec3 pos = (vertexPosition * 2.0 + normal); // vertexPosition has to be multiplied by a large number (workaround for empty space)
+    gl_Position = uProjection * vec4(pos, 1);
+  }
+  else
+  {
+    gl_Position = uProjection * vec4(vertexPosition, 1);
+  }
 }
 `;
 
@@ -68,6 +74,7 @@ precision highp float;
 uniform highp sampler2D uTexture;
 
 uniform bool uUseLight;
+uniform bool uDrawOutlineF;
 
 uniform vec3 uLightColor;
 uniform float uAmbient;
@@ -112,7 +119,14 @@ void main()
     light = vec4(lightVec, 1);
   }
 
-  oColor = (uColor == vec4(0, 0, 0, 0) ? texture(uTexture, vTexCoord) : uColor) * light;
+  if(uDrawOutlineF)
+  {
+    oColor = vec4(0, 0, 0, 1);
+  }
+  else
+  {
+    oColor = (uColor == vec4(0, 0, 0, 0) ? texture(uTexture, vTexCoord) : uColor) * light;
+  }
 }
 `;
 
