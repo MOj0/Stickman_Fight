@@ -143,7 +143,7 @@ io.sockets.on('connection',
                             console.log("Respawning player: " + player.player);
                             setTimeout(function () {
                                 updatePlayer(player.id, random(-10, 25), random(-10, 25), player.maxLife);
-                            }, 4000);
+                            }, 3000);
                             player.timeout = false;
                         }
                     }

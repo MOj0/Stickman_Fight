@@ -1,10 +1,8 @@
 "use strict";
 
-import { GUI } from './lib/dat.gui.module.js';
 import { mat4 } from './lib/gl-matrix-module.js';
 import { Engine } from './Engine.js';
 import { Node } from './Node.js';
-import * as FloorModel from "./floor.js";
 import { PerspectiveCamera } from './PerspectiveCamera.js';
 import { Renderer } from "./Renderer.js";
 import { MPlayer } from "./server/client/player.js";
@@ -57,8 +55,6 @@ document.addEventListener("DOMContentLoaded", () =>
                 mPlayer.hitTimeout = true;
             }
         };
-        console.log(mPlayer);
-
     });
     socket.on('health', function(life){
         mPlayer.life = life;
@@ -177,18 +173,6 @@ document.addEventListener("DOMContentLoaded", () =>
             updateGUI = false;
         }
     });
-
-    // Debug
-    const gui = new GUI();
-    gui.add(app.light, 'ambient', 0.0, 100.0);
-    gui.add(app.light, 'diffuse', 0.0, 1.0);
-    gui.add(app.light, 'specular', 0.0, 1.0);
-    gui.add(app.light, 'shininess', 0.0, 1000.0);
-    gui.addColor(app.light, 'color');
-    for (let i = 0; i < 3; i++) {
-        gui.add(app.light.translation, i, -100.0, 100.0).name('translation.' + String.fromCharCode('x'.charCodeAt(0) + i));
-    }
-    gui.add(app.light.attenuatuion, 2, -5.0, 100.0).name('attenuatuion');
 });
 
 class App extends Engine
@@ -228,13 +212,10 @@ class App extends Engine
         this.scene.addNode(this.light);
 
         this.player = this.scene.getNodeByName("Armature");
-        this.player.translation = [mPlayer.x, 0, mPlayer.y]; // Sets player location to the one received from server
+        this.player.translation = [mPlayer.x, 0.15, mPlayer.y]; // Sets player location to the one received from server
         this.player.color = mPlayer.color; // Set color to the one recieved from server
 
         this.camera = new PerspectiveCamera(); // create Camera manually
-
-        // All nodes are loaded
-        console.log("Nodes in the scene", this.scene.nodes);
 
         this.renderer = new Renderer(this.gl);
         this.renderer.prepareScene(this.scene);

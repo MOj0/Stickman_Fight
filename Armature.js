@@ -23,23 +23,12 @@ export class Armature
             Kick_R: 3,
         };
 
-        const userAnimationNameMap = {
-            0: "Left",
-            1: "Up",
-            2: "Right",
-            3: "Down",
-        }
-
         this.mPlayerAnimationStartMap = {}; // Map containing start times of animations for mPlayers
 
         this.allCombos = [[0, 2, 1, 3], [0, 0, 3], [0, 2, 0, 1, 3]];
         this.comboNames = ["Punch_Uppercut", "Kick_Spin", "Kick_Jump"];
         this.comboIndex = 0;
         this.currComboChain = JSON.parse(JSON.stringify(this.allCombos)); // Deep copy allCombos
-
-        console.log("The combos are:");
-        for (const combo of this.allCombos)
-            console.log(combo.map(value => userAnimationNameMap[value]));
 
         for (const bone of this.bones)
         {

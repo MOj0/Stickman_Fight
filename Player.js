@@ -41,11 +41,4 @@ export class Player extends Node
     {
         return this.armature.getBoneMatricesCombos(this.getAnimation(), sinceStart);
     }
-
-    setAnimationTired()
-    {
-        this.currAnimation = "Tired";
-        // Reset animation after 1.5s
-        setTimeout(() => this.currAnimation = "Idle", 1500);
-    }
 }

@@ -15,8 +15,8 @@ export class Renderer
 
         gl.clearColor(0.45, 0.7, 1, 1);
         gl.enable(gl.DEPTH_TEST);
-        // gl.enable(gl.STENCIL_TEST);
-        // gl.enable(gl.CULL_FACE);
+        gl.enable(gl.STENCIL_TEST);
+        gl.enable(gl.CULL_FACE);
     }
 
     prepareBufferView(bufferView)
@@ -201,8 +201,6 @@ export class Renderer
 
         gl.useProgram(program.program);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-
-        gl.enable(gl.STENCIL_TEST);  // turn on the stencil
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 

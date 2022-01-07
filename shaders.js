@@ -57,7 +57,7 @@ void main()
   
   if(uDrawOutline)
   {
-    vec3 normal = normalize(aNormal) * 0.1; // 0.1 - Outline size TODO: Set as uniform
+    vec3 normal = normalize(aNormal) * 0.1;
     vec3 pos = (vertexPosition * 2.0 + normal); // vertexPosition has to be multiplied by a large number (workaround for empty space)
     gl_Position = uProjection * vec4(pos, 1);
   }
