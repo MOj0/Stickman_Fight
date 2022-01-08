@@ -58,7 +58,7 @@ void main()
   if(uDrawOutline)
   {
     vec3 normal = normalize(aNormal) * 0.1;
-    vec3 pos = (vertexPosition * 2.0 + normal); // vertexPosition has to be multiplied by a large number (workaround for empty space)
+    vec3 pos = (vertexPosition * 2.0 + normal); // vertexPosition has to be multiplied by a number (workaround for empty space)
     gl_Position = uProjection * vec4(pos, 1);
   }
   else
@@ -108,8 +108,8 @@ void main()
     float ambient = uAmbient;
 
     // Diffuse smooth calc
-    float diffuse = dot(vNormal, vLight);
-    float delta = fwidth(diffuse) * 5.0;
+    float diffuse = dot(L, N);
+    float delta = fwidth(diffuse) * 2.0;
     float diffuseSmooth = smoothstep(0.0, delta, diffuse);
 
     float specular = uSpecular * phong;

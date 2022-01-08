@@ -72,6 +72,10 @@ export class Camera extends Node
         // 5: update translation / Collision detection?
         let canMove = player.currAnimation != "Dies";
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
+        if (Math.sqrt(Math.pow(player.translation[0], 2) + Math.pow(player.translation[2], 2)) >= 300)
+        {
+            canMove = false;
+        }
         for (let otherPlayer of otherPlayers)
         {
             if (Math.abs(player.translation[0] - otherPlayer.x) + Math.abs(player.translation[2] - otherPlayer.y) < otherPlayer.r)
