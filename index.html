@@ -7,16 +7,7 @@
 
     <link rel="icon" type="image/png" sizes="32x32" href="icons/stickman-32x32.png">
     <link rel="stylesheet" type="text/css" href="style.css">
-
-
-    <!-- <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-    </style> -->
-
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
 
     <script type="text/javascript" src="../../lib/dat.gui.min.js"></script>
@@ -25,10 +16,59 @@
 </head>
 
 <body>
-    <!-- <canvas></canvas> -->
     <div class="fullscreen">
         <canvas>
         </canvas>
+    </div>
+    <div id="hud">
+        <div class="playerHealthBarOutline">
+            <div id="playerHealthBar" class="healthBar"></div>
+        </div>
+
+        <div id="otherPlayerIndicators">
+        </div>
+        <!--<div class="enemyHealthBarOutline">
+            <div id="playerName" class="enemyHealthBar"></div>
+        </div>-->
+
+        <div id="overlay">Wasted</div>
+        <div id="xpContainer">
+            <div id="xp"></div>
+            <div id="level" class="level">1</div>
+            <div id="xpCount">0</div>
+        </div>
+    </div>
+    <div id="controls">
+        <p><b>Controls</b></p>
+        <p><img src="assets/images/WASD.png" /> - to move the player</p>
+        <p><img class="smaller" src="assets/images/Mouse.png" /> - to move the camera</p>
+        <p><img class="smaller" src="assets/images/LEFT.png" /> - left punch</p>
+        <p><img class="smaller" src="assets/images/RIGHT.png" /> - right punch</p>
+        <p><img class="smaller" src="assets/images/UP.png" /> - left kick</p>
+        <p><img class="smaller" src="assets/images/DOWN.png" /> - right kick</p>
+
+        <p><b>Combos</b></p>
+        <p>
+            <img class="smaller" src="assets/images/LEFT.png" />
+            <img class="smaller" src="assets/images/RIGHT.png" />
+            <img class="smaller" src="assets/images/UP.png" />
+            <img class="smaller" src="assets/images/DOWN.png" />
+            - Jump punch
+        </p>
+        <p>
+            <img class="smaller" src="assets/images/LEFT.png" />
+            <img class="smaller" src="assets/images/LEFT.png" />
+            <img class="smaller" src="assets/images/DOWN.png" />
+            - Spinning kick
+        </p>
+        <p>
+            <img class="smaller" src="assets/images/LEFT.png" />
+            <img class="smaller" src="assets/images/RIGHT.png" />
+            <img class="smaller" src="assets/images/LEFT.png" />
+            <img class="smaller" src="assets/images/UP.png" />
+            <img class="smaller" src="assets/images/DOWN.png" />
+            - Jump kick
+        </p>
     </div>
 </body>
 

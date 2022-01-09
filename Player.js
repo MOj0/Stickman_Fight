@@ -15,23 +15,30 @@ export class Player extends Node
     {
         super(options);
 
-        this.rotation[1] = Math.PI; // Rotate player so he points in the opposite direction of the camera
-
         this.velocity = vec3.set(vec3.create(), 0, 0, 0);
-        this.maxSpeed = 3;
-        this.friction = 0.2;
-        this.acceleration = 20;
+        this.maxSpeed = 23;
+        this.friction = 1;
+        this.acceleration = 100;
+        this.completedCombo = false;
+        this.resetAnimation = true;
+
+        this.armature.playerRef = this;
     }
 
-    getAnimation()
+    getAnimation(name = null)
     {
         for(const animation of this.animations)
         {
-            if(animation.name == this.currAnimation)
+            if(name === null && animation.name === this.currAnimation || name != null && animation.name == name)
             {
-                return animation; 
+                return animation;
             }
         }
         return null;
+    }
+
+    getAnimationBoneMatrices(sinceStart)
+    {
+        return this.armature.getBoneMatricesCombos(this.getAnimation(), sinceStart);
     }
 }

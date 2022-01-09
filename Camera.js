@@ -22,10 +22,12 @@ export class Camera extends Node
         this.halfpi = Math.PI / 2 - 0.01;
     }
 
-    update(dt, player)
+    update(dt, player, mPlayer, otherPlayers)
     {
         const c = this;
-      
+
+        player.rotation[1] = c.rotation[1]; // Lock player's Y rotation to camera's Y rotation
+
         // Note: the formulas are changed, because the player is rotated 180 deg
         const forward = vec3.set(vec3.create(), Math.sin(player.rotation[1]), 0, Math.cos(player.rotation[1]));
         const right = vec3.set(vec3.create(), -Math.cos(player.rotation[1]), 0, Math.sin(player.rotation[1]));
@@ -67,8 +69,26 @@ export class Camera extends Node
             vec3.scale(player.velocity, player.velocity, player.maxSpeed / len);
         }
 
-        // 5: update translation
+        // 5: update translation / Collision detection?
+        let canMove = player.currAnimation != "Dies";
         vec3.scaleAndAdd(player.translation, player.translation, player.velocity, dt);
+        if (Math.sqrt(Math.pow(player.translation[0], 2) + Math.pow(player.translation[2], 2)) >= 300)
+        {
+            canMove = false;
+        }
+        for (let otherPlayer of otherPlayers)
+        {
+            if (Math.abs(player.translation[0] - otherPlayer.x) + Math.abs(player.translation[2] - otherPlayer.y) < otherPlayer.r)
+            {
+                canMove = false;
+            }
+        }
+        if (!canMove)
+        {
+            let tmpVelocity = [0, 0, 0];
+            vec3.mul(tmpVelocity, player.velocity, [-1, 1, -1]);
+            vec3.scaleAndAdd(player.translation, player.translation, tmpVelocity, dt);
+        }
 
         // Update the final transform
         const t = player.transform;
@@ -81,26 +101,41 @@ export class Camera extends Node
         mat4.rotateY(c.transform, c.transform, player.rotation[1] + Math.PI);
         mat4.rotateX(c.transform, c.transform, c.rotation[0]);
 
-        // Animations
-        player.currAnimation = isMoving ? "Run" : "Idle";
-
-        // Override the animation if player is attacking
-        if (this.keys["ArrowLeft"])
+        // Reset animations
+        if (player.resetAnimation)
         {
-            player.currAnimation = "Punch_L";
+            player.currAnimation = isMoving ? "Run" : "Idle";
         }
-        if (this.keys["ArrowRight"])
+        
+        // If animation can be reset and player is attacking => override the animation
+        if (player.resetAnimation && !player.currAnimation.startsWith("Hit"))
         {
-            player.currAnimation = "Punch_R";
+            if (this.keys["ArrowLeft"])
+            {
+                player.currAnimation = "Punch_L";
+                player.resetAnimation = false;
+                mPlayer.hitWithDelay(0, 600);
+            }
+            if (this.keys["ArrowRight"])
+            {
+                player.currAnimation = "Punch_R";
+                player.resetAnimation = false;
+                mPlayer.hitWithDelay(0, 600);
+            }
+            if (this.keys["ArrowUp"])
+            {
+                player.currAnimation = "Kick_L";
+                player.resetAnimation = false;
+                mPlayer.hitWithDelay(0, 600);
+            }
+            if (this.keys["ArrowDown"])
+            {
+                player.currAnimation = "Kick_R";
+                player.resetAnimation = false;
+                mPlayer.hitWithDelay(0, 600);
+            }
         }
-        if (this.keys["ArrowUp"])
-        {
-            player.currAnimation = "Kick_L";
-        }
-        if (this.keys["ArrowDown"])
-        {
-            player.currAnimation = "Kick_R";
-        }
+        mPlayer.currAnimation = player.currAnimation;
     }
 
     updateProjection()
@@ -156,7 +191,7 @@ export class Camera extends Node
 
     wheelHandler(e)
     {
-        this.viewDistance += e.deltaY / 200;
+        this.viewDistance = Math.min(30, Math.max(8, this.viewDistance + e.deltaY / 200));
     }
 }
 

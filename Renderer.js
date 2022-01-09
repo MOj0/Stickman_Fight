@@ -1,8 +1,6 @@
 import { vec3, mat4 } from './lib/gl-matrix-module.js';
-import { shaders } from "./shaders.js";
 import { Engine } from "./Engine.js";
-import { Armature } from './Armature.js';
-import { Player } from './Player.js';
+import { shaders } from "./shaders.js";
 
 export class Renderer
 {
@@ -14,10 +12,10 @@ export class Renderer
         this.glObjects = new Map();
 
         this.timeOld = 0;
-        this.curLerp = 0;
 
         gl.clearColor(0.45, 0.7, 1, 1);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.STENCIL_TEST);
         gl.enable(gl.CULL_FACE);
     }
 
@@ -134,9 +132,10 @@ export class Renderer
         // This is an application-scoped convention, matching the shader (layout location)
         const attributeNameToIndexMap = {
             POSITION: 0,
-            TEXCOORD_0: 1,
-            JOINTS_0: 2,
-            WEIGHTS_0: 3
+            NORMAL: 1,
+            TEXCOORD_0: 2,
+            JOINTS_0: 3,
+            WEIGHTS_0: 4
         };
 
         for (const name in primitive.attributes)
@@ -194,20 +193,14 @@ export class Renderer
         }
     }
 
-    render(scene, player, camera, sinceStart)
+    render(scene, player, camera, light, sinceStart)
     {
         /** @type {WebGL2RenderingContext} */
         const gl = this.gl;
         const program = this.programs.shader;
-        const delta = sinceStart - (this.timeOld);
-
-        this.curLerp += delta * 0.008;
-
-        // Ensure curLerp is in [0, 1]
-        this.curLerp = this.curLerp >= 1 ? 0 : this.curLerp;
 
         gl.useProgram(program.program);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
         gl.activeTexture(gl.TEXTURE0);
         gl.uniform1i(program.uniforms.uTexture, 0);
 
@@ -218,55 +211,80 @@ export class Renderer
         cameraMatrix[12] = playerMatrix[12];
         cameraMatrix[13] = playerMatrix[13];
         cameraMatrix[14] = playerMatrix[14];
-        // Translate Z back for viewDistance
-        mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]);
-        
+        mat4.translate(cameraMatrix, cameraMatrix, [0, 0, camera.viewDistance]); // Translate Z axis for viewDistance
+
         const cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-        const playerPosition = [playerMatrix[12], playerMatrix[13], playerMatrix[14]];
+        const playerPosition = [playerMatrix[12], playerMatrix[13] + 5, playerMatrix[14]];
         const up = [0, 1, 0];
         const viewMatrix = mat4.lookAt(mat4.create(), cameraPosition, playerPosition, up); // look at the player
 
         // ANIMATIONS
         // Gets the bone positions for the current frame of animation
-        const animation = player.getAnimation();
-        const boneMatrices = player.armature.getBoneMatrices(animation, sinceStart);
-        const identity = [
-            1., 0., 0., 0.,
-            0., 1., 0., 0.,
-            0., 0., 1., 0.,
-            0., 0., 0., 1.
-        ];
-        const nBones = boneMatrices.length / 16; // Every bone is 4x4 matrix
-        let identityBones = []; // NOTE: Send this to the shader to stop animation
-        for (let i = 0; i < nBones; i++)
-        {
-            identityBones[i] = identity;
-        }
-        identityBones = new Float32Array([].concat(...identityBones));
-
+        const boneMatrices = player.getAnimationBoneMatrices(sinceStart);
         gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
-        // gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, identityBones); // Send the bone positions to the shader
 
-        const mvpMatrix = mat4.mul(mat4.create(), camera.projection, viewMatrix);
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, camera.projection);
+
+        // Lighting
+        const lightVMatrix = mat4.mul(mat4.create(), viewMatrix, light.transform);
+        gl.uniform1f(program.uniforms.uAmbient, light.ambient);
+        gl.uniform1f(program.uniforms.uDiffuse, light.diffuse);
+        gl.uniform1f(program.uniforms.uSpecular, light.specular);
+        gl.uniform1f(program.uniforms.uShininess, light.shininess);
+        gl.uniform3fv(program.uniforms.uLightPosition, [lightVMatrix[12], lightVMatrix[13], lightVMatrix[14]]);
+        const color = vec3.clone(light.color);
+        vec3.scale(color, color, 1.0 / 255.0);
+        gl.uniform3fv(program.uniforms.uLightColor, color);
+        gl.uniform3fv(program.uniforms.uLightAttenuation, light.attenuatuion);
+
+        const viewModelMatrix = mat4.copy(mat4.create(), viewMatrix);
         for (const node of scene.nodes)
         {
-            this.renderNode(node, mvpMatrix);
+            gl.uniform1f(program.uniforms.uUseLight, true); // Use light by default
+            gl.uniform1f(program.uniforms.uDrawOutline, false); // Don't draw outline by default
+
+            if(node.name && node.name == "Armature")
+            {
+                this.renderNodeWithOutline(node, viewModelMatrix);
+            }
+            else
+            {
+                if (node.name && node.name.startsWith("0.")) // Another player
+                {
+                    const anotherPlayerAnimation = player.getAnimation(node.currAnimation);
+                    const boneMatrices = player.armature.getBoneMatricesMPlayer(node.name, anotherPlayerAnimation, sinceStart);
+                    gl.uniformMatrix4fv(program.uniforms["uBones[0]"], false, boneMatrices); // Send the bone positions to the shader
+
+                    this.renderNodeWithOutline(node, viewModelMatrix);
+                }
+                else
+                {
+                    if(node.name == "Sphere")
+                    {
+                        gl.uniform1f(program.uniforms.uUseLight, false); // For the skyball we don't want to use lighting
+                    }
+                    this.renderNode(node, viewModelMatrix);
+                }
+            }
         }
 
         this.timeOld = sinceStart;
     }
 
-    renderNode(node, mvpMatrix)
+    renderNode(node, viewModelMatrix, color = null)
     {
         const gl = this.gl;
 
-        mvpMatrix = mat4.clone(mvpMatrix);
-        mat4.mul(mvpMatrix, mvpMatrix, node.transform);
+        viewModelMatrix = mat4.clone(viewModelMatrix);
+        mat4.mul(viewModelMatrix, viewModelMatrix, node.transform);
+
+        const program = this.programs.shader;
+
+        gl.uniform4fv(program.uniforms.uColor, color ? color : [0, 0, 0, 0]); // Set node color or reset it (texture is used in that case)
 
         if (node.mesh)
         {
-            const program = this.programs.shader;
-            gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
+            gl.uniformMatrix4fv(program.uniforms.uViewModel, false, viewModelMatrix);
             for (const primitive of node.mesh.primitives)
             {
                 this.renderPrimitive(primitive);
@@ -274,21 +292,53 @@ export class Renderer
         }
         else if (node.model)
         {
-            const program = this.programs.shader;
             gl.bindVertexArray(node.model.vao);
-            gl.uniformMatrix4fv(program.uniforms.uModelViewProjection, false, mvpMatrix);
+            gl.uniformMatrix4fv(program.uniforms.uViewModel, false, viewModelMatrix);
             gl.bindTexture(gl.TEXTURE_2D, node.texture);
             gl.drawElements(gl.TRIANGLES, node.model.indices, gl.UNSIGNED_SHORT, 0);
         }
 
         for (const child of node.children)
         {
-            if(child.isJoint || (child.name && child.name == "Camera"))
-            {
-                continue;
-            }
-            this.renderNode(child, mvpMatrix);
+            if (child.isJoint) continue;
+            this.renderNode(child, viewModelMatrix, node.color);
         }
+    }
+
+    renderNodeWithOutline(node, viewModelMatrix)
+    {
+        const gl = this.gl;
+        const program = this.programs.shader;
+
+        gl.stencilFunc(
+            gl.ALWAYS,    // the test
+            1,            // reference value
+            0xFF,         // mask
+        );
+        // Set it so we replace with the reference value (1)
+        gl.stencilOp(
+           gl.KEEP,     // what to do if the stencil test fails
+           gl.KEEP,     // what to do if the depth test fails
+           gl.REPLACE,  // what to do if both tests pass
+        );
+        this.renderNode(node, viewModelMatrix); // Draw node normally
+
+        // Set the test that the stencil must = 0
+        gl.stencilFunc(
+            gl.EQUAL,     // the test
+            0,            // reference value
+            0xFF,         // mask
+        );
+        // don't change the stencil buffer on draw
+        gl.stencilOp(
+            gl.KEEP,     // what to do if the stencil test fails
+            gl.KEEP,     // what to do if the depth test fails
+            gl.KEEP,  // what to do if both tests pass
+        );
+
+        // Draw outline of node
+        gl.uniform1f(program.uniforms.uDrawOutline, true);
+        this.renderNode(node, viewModelMatrix);
     }
 
     renderPrimitive(primitive)

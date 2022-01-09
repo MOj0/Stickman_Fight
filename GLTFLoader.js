@@ -23,6 +23,8 @@ export class GLTFLoader
         this.gltfUrl = null;
         this.dirname = null;
 
+        this.playerOptions = null;
+
         this.cache = new Map();
     }
 
@@ -353,9 +355,8 @@ export class GLTFLoader
 
         const node = isPlayerNode ? new Player(options) : new Node(options);
         if(isPlayerNode)
-        {
-            armature.setPlayerRef(node);
-        }
+            this.playerOptions = options;
+        
         this.cache.set(gltfSpec, node);
         return node;
     }
