@@ -6,4 +6,5 @@ Online Multiplayer game Stickman Fight made for the Computer Graphics class.
 
 # Instructions
 
-To play the game, run the following command in the root of the project: `node GameServer.js`. To install any missing dependencies run: `npm -i`. Open the following link in your browser: http://127.0.0.1:7777/index.html
+To play the game, run the following command in the root of the project: `node GameServer.js`. Note: for some reason this command doesn't work in the standard Command Prompt (Windows), so you will have to use PowerShell.
+To install any missing dependencies run: `npm -i`. Open the following link in your browser: http://127.0.0.1:7777/index.html
