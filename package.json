@@ -3,5 +3,8 @@
     "compression": "^1.7.4",
     "express": "^4.17.2",
     "socket.io": "^4.4.0"
-  }
+  },
+  "scripts": {
+    "start":"node GameServer.js"
+    }
 }
